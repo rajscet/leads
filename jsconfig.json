@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+      "jsx": "react",
+      "baseUrl": ".",
+      "paths": {
+        "assets/*": ["./src/assets/*"],
+        "components/*": ["./src/components/*"],
+        "constants/*": ["./src/constants/*"],
+        "helpers/*": ["./src/helpers/*"],
+        "navigation/*": ["./src/navigation/*"],
+        "services/*": ["./src/services/*"],
+        "customHooks/*": ["./src/customHooks/*"],
+        "reduxData/*": ["./src/reduxData/*"],
+        "screens/*": ["./src/screens/*"], 
+        "providers/*": ["./src/providers/*"],
+      }
+    }
+  }

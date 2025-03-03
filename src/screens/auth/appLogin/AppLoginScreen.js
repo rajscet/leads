@@ -7,7 +7,7 @@ import {ENV, ROUTE_NAMES} from 'constants/index';
 import {hp, normalize, wp} from 'helpers/styles/responsive';
 import React, {useState} from 'react';
 import {PermissionsAndroid, Platform, StyleSheet, View} from 'react-native';
-import {Camera} from 'react-native-camera-kit';
+import {Camera, CameraType} from 'react-native-camera-kit';
 import DeviceInfo from 'react-native-device-info';
 
 const AppLoginScreen = ({navigation}) => {
@@ -55,6 +55,7 @@ const AppLoginScreen = ({navigation}) => {
         {isScanning && (
           <Camera
             scanBarcode={true}
+            cameraType={'back'}
             onReadCode={onBarcodeScan} // optional
             showFrame={true} // (default false) optional, show frame with transparent layer (qr code or barcode will be read on this area ONLY), start animation for scanner, that stops when a code has been found. Frame always at center of the screen
             laserColor="red" // (default red) optional, color of laser in scanner frame

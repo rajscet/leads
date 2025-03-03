@@ -21,7 +21,7 @@ import useDidMountEffect from 'components/UseDidMountEffect';
 import {useLoader} from 'providers/LoaderProvider';
 import globalStyle from 'helpers/styles';
 
-const LogScreen = () => {
+const LogScreen = ({openDrawer}) => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [offset, setOffset] = useState(0);
@@ -105,6 +105,7 @@ const LogScreen = () => {
         hasLeft
         title={'Logs'}
         hasRight
+        openDrawer={openDrawer}
         right={
           <Pressable
             onPress={() => {

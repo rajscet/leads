@@ -7,7 +7,7 @@ import React, {useMemo} from 'react';
 import {StyleSheet, View} from 'react-native';
 import LeadsList from './LeadsList';
 
-export default function LeadsListScreen() {
+export default function LeadsListScreen({openDrawer}) {
   const [selectedType, setSelectedType] = React.useState(0);
   // Memoize LeadsList components to avoid re-rendering
   const sentList = useMemo(() => <LeadsList value="Sent" />, []);
@@ -15,7 +15,7 @@ export default function LeadsListScreen() {
 
   return (
     <View key={selectedType.toString()} style={styles.screen}>
-      <DrawerHeader hasLeft title={'Leads'} />
+      <DrawerHeader openDrawer={openDrawer} hasLeft title={'Leads'} />
 
       <View style={styles.screen}>
         <SegmentedControl

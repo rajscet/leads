@@ -10,7 +10,7 @@ import NavigationBar from './NavigationBar';
 import FontText from 'components/FontText';
 import { isTablet } from 'react-native-device-info';
 
-function DrawerHeader({title, style, hasLeft, right}) {
+function DrawerHeader({title, style, hasLeft, right, openDrawer}) {
   const navigation = useNavigation();
 
   return (
@@ -27,7 +27,7 @@ function DrawerHeader({title, style, hasLeft, right}) {
         hasLeft ? (
           <Pressable
             onPress={() => {
-              navigation.toggleDrawer();
+              openDrawer();
             }}>
             <SvgIcons.DrawerMenu stroke={colors.white} />
           </Pressable>

@@ -346,7 +346,7 @@ export default function UserLogin({navigation}) {
   return (
     <View style={styles.container}>
       <Header hasLeft={false} title={'Login'} />
-
+      
       <>
         <SegmentedControl
           tintColor={colors.gray_5D7285}
@@ -363,7 +363,16 @@ export default function UserLogin({navigation}) {
             setSelectedType(event.nativeEvent.selectedSegmentIndex);
           }}
         />
+        
         <View style={styles.subContainer}>
+        <Button onPress={verifyOTP} style={styles.verifyOTPButton}>
+          <FontText
+            fontFamily={Fonts.robotRegular}
+            size={normalize(16)}
+            color={colors.white}>
+            {'Submit'}
+          </FontText>
+        </Button>
           <Dropdown
             ref={userRef}
             title={'User'}
@@ -429,14 +438,7 @@ export default function UserLogin({navigation}) {
             val={selectedLocation?.name || ''}
           />
         </View>
-        <Button onPress={verifyOTP} style={styles.verifyOTPButton}>
-          <FontText
-            fontFamily={Fonts.robotRegular}
-            size={normalize(16)}
-            color={colors.white}>
-            {'Submit'}
-          </FontText>
-        </Button>
+        
         <FontText
           pBottom={wp(20)}
           style={{textAlign: 'center'}}

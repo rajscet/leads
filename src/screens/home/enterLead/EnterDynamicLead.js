@@ -10,11 +10,12 @@ import {Pressable} from 'react-native';
 import { Utils } from 'helpers/utils';
 import { isTablet } from 'react-native-device-info';
 
-export default function EnterDynamicLead() {
+export default function EnterDynamicLead({openDrawer}) {
   return (
     <>
       <DrawerHeader
         hasLeft
+        openDrawer={openDrawer}
         title={'Enter Lead'}
         hasRight
         right={

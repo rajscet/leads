@@ -1,156 +1,367 @@
-import React, { useRef, useState } from 'react';
-import { View, Text, Button, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import DrawerLayout from 'react-native-drawer-layout';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import colors from 'assets/colors';
-import Fonts from 'assets/fonts/fonts';
-import LocalImages from 'assets/images/localImages';
-import SvgIcons from 'assets/svgs/svgIcons';
-import FontText from 'components/FontText';
-import { ENV, ROUTE_NAMES } from 'constants/index';
-import { normalize, wp } from 'helpers/styles/responsive';
-import { Utils } from 'helpers/utils';
-import DeviceInfo from 'react-native-device-info';
-
-// Screens
+import {ENV, ROUTE_NAMES} from 'constants/index';
+import * as React from 'react';
+import {Text, View, StyleSheet, TouchableOpacity, Image} from 'react-native';
+import {Drawer} from 'react-native-drawer-layout';
 import EnterDynamicLead from './enterLead/EnterDynamicLead';
 import LeadsListScreen from './LeadsList/LeadsListScreen';
-import LogScreen from './logs/LogScreen';
 import SearchCustomer from './searchCustomer/SearchCustomer';
+import LogScreen from './logs/LogScreen';
+import {DrawerContentScrollView} from 'screens/drawer/DrawerContentScrollView';
+import { DrawerItem } from 'screens/drawer/DrawerItem';
+import LocalImages from 'assets/images/localImages';
+import { normalize, wp } from 'helpers/styles/responsive';
+import Fonts from 'assets/fonts/fonts';
+import SvgIcons from 'assets/svgs/svgIcons';
+import FontText from 'components/FontText';
+import colors from 'assets/colors';
+import DeviceInfo, { isTablet } from 'react-native-device-info';
+import { Utils } from 'helpers/utils';
 
-const Stack = createStackNavigator();
-
-const AppNavigator = ({ openDrawer }) => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name={ROUTE_NAMES.ENTER_LEAD_SCREEN}>
-      {props => <EnterDynamicLead {...props} openDrawer={openDrawer} />}
-    </Stack.Screen>
-    <Stack.Screen name={ROUTE_NAMES.LEAD_LIST}>
-      {props => <LeadsListScreen {...props} openDrawer={openDrawer} />}
-    </Stack.Screen>
-    <Stack.Screen name={ROUTE_NAMES.SEARCH_CUSTOMER}>
-      {props => <SearchCustomer {...props} openDrawer={openDrawer} />}
-    </Stack.Screen>
-    <Stack.Screen name={ROUTE_NAMES.LOG_SCREEN}>
-      {props => <LogScreen {...props} openDrawer={openDrawer} />}
-    </Stack.Screen>
-  </Stack.Navigator>
-);
-
-// Custom Drawer Content
-function CustomDrawerContent({ navigation, closeDrawer }) {
-  const [selectedItem, setSelectedItem] = useState(ROUTE_NAMES.ENTER_LEAD_SCREEN);
-
+// Screen Components
+function HomeScreen({openDrawer}) {
   return (
-    <View style={styles.drawerContainer}>
-      {/* User Info */}
-      <View style={{ flexDirection: 'row', marginVertical: wp(30) }}>
-        <SvgIcons.DrawerMenu style={{ marginLeft: wp(8), marginRight: wp(14) }} />
-        <View>
-          <FontText color={colors.blue} style={{ alignSelf: 'center' }} size={normalize(17)} fontFamily={Fonts.robotBold}>
-            John Doe
-          </FontText>
-          <FontText color={colors.gray_5D7285} style={{ alignSelf: 'center' }} size={normalize(13)} fontFamily={Fonts.robotBold}>
-            Admin
-          </FontText>
-        </View>
-      </View>
-
-      {/* Drawer Items */}
-      {[
-        { label: 'Enter Lead', route: ROUTE_NAMES.ENTER_LEAD_SCREEN, icon: LocalImages.newLead },
-        { label: 'Leads', route: ROUTE_NAMES.LEAD_LIST, icon: LocalImages.leads },
-        { label: 'Search Customer', route: ROUTE_NAMES.SEARCH_CUSTOMER, icon: LocalImages.customer },
-        { label: 'Logs', route: ROUTE_NAMES.LOG_SCREEN, icon: LocalImages.logs },
-      ].map(item => (
-        <TouchableOpacity
-          key={item.route}
-          style={[
-            styles.drawerItem,
-            selectedItem === item.route && { backgroundColor: colors.primary },
-          ]}
-          onPress={() => {
-            setSelectedItem(item.route);
-            navigation.navigate(item.route);
-            closeDrawer();
-          }}
-        >
-          <Image source={item.icon} tintColor={selectedItem === item.route ? colors.white : colors.gray_5D7285} style={styles.icon} />
-          <Text style={[styles.drawerItemText, selectedItem === item.route && { color: colors.white }]}>{item.label}</Text>
-        </TouchableOpacity>
-      ))}
-
-      {/* Logout Button */}
-      <View style={styles.superAdminSection}>
-        <TouchableOpacity style={styles.superAdminButton} onPress={() => Utils.userLogout()}>
-          <SvgIcons.Logout style={styles.icon} color={colors.white} width={wp(24)} height={wp(24)} />
-          <Text style={styles.superAdminText}>Logout</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Version Info */}
-      <FontText pTop={wp(20)} style={{ textAlign: 'center' }} fontFamily={Fonts.robotRegular} size={normalize(16)} color={colors.black}>
-        {`Version: ${DeviceInfo.getVersion()}\n Environment: ${ENV}`}
-      </FontText>
+    <View style={styles.container}>
+      <TouchableOpacity style={styles.button} onPress={openDrawer}>
+        <Text style={styles.buttonText}>Open drawer</Text>
+      </TouchableOpacity>
+      <Text style={styles.screenText}>Home Screen</Text>
     </View>
   );
 }
 
-// Main App Component with Drawer
-const Home = () => {
-  const drawerRef = useRef(null);
+function SettingsScreen({openDrawer}) {
+  return (
+    <View style={styles.container}>
+      <TouchableOpacity style={styles.button} onPress={openDrawer}>
+        <Text style={styles.buttonText}>Open drawer</Text>
+      </TouchableOpacity>
+      <Text style={styles.screenText}>Settings Screen</Text>
+    </View>
+  );
+}
 
-  const openDrawer = () => {
-    if (drawerRef.current) drawerRef.current.openDrawer();
-  };
+function ProfileScreen({openDrawer}) {
+  return (
+    <View style={styles.container}>
+      <TouchableOpacity style={styles.button} onPress={openDrawer}>
+        <Text style={styles.buttonText}>Open drawer</Text>
+      </TouchableOpacity>
+      <Text style={styles.screenText}>Profile Screen</Text>
+    </View>
+  );
+}
 
-  const closeDrawer = () => {
-    if (drawerRef.current) drawerRef.current.closeDrawer();
-  };
+// Drawer Content Component
+function DrawerContent({onClose, setScreen}) {
+  return (
+    <View style={styles.drawerContainer}>
+      <TouchableOpacity
+        style={styles.drawerItem}
+        onPress={() => {
+          setScreen('Home');
+          onClose();
+        }}>
+        <Text style={styles.drawerText}>Home</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.drawerItem}
+        onPress={() => {
+          setScreen('Settings');
+          onClose();
+        }}>
+        <Text style={styles.drawerText}>Settings</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.drawerItem}
+        onPress={() => {
+          setScreen('Profile');
+          onClose();
+        }}>
+        <Text style={styles.drawerText}>Profile</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function CustomDrawerContent({user, onClose, setScreen}) {
+  const [selectedItem, setSelectedItem] = React.useState(
+    ROUTE_NAMES.ENTER_LEAD_SCREEN,
+  );
 
   return (
-    <NavigationContainer>
-      <DrawerLayout
-        ref={drawerRef}
-        drawerWidth={wp(270)}
-        drawerPosition="left"
-        renderNavigationView={() => <CustomDrawerContent navigation={navigation} closeDrawer={closeDrawer} />}
-      >
-        <AppNavigator openDrawer={openDrawer} />
-      </DrawerLayout>
-    </NavigationContainer>
+ 
+      <View style={styles.drawerContent}>
+        <View style={{flexDirection: 'row', marginVertical: wp(30)}}>
+          <SvgIcons.DrawerMenu
+            style={{marginLeft: wp(8), marginRight: wp(14)}}
+          />
+          <View>
+            <FontText
+              color={colors.blue}
+              style={{alignSelf: 'center'}}
+              size={normalize(17)}
+              fontFamily={Fonts.robotBold}>
+              {`${user?.first_name} ${user?.last_name}`}
+            </FontText>
+            <FontText
+              color={colors.gray_5D7285}
+              style={{alignSelf: 'center'}}
+              size={normalize(13)}
+              fontFamily={Fonts.robotBold}>
+              {`${user?.role.name}`}
+            </FontText>
+          </View>
+        </View>
+
+        <DrawerItem
+          label={'Enter Lead'}
+          icon={() => (
+            <Image
+              source={LocalImages.newLead}
+              tintColor={
+                selectedItem === ROUTE_NAMES.ENTER_LEAD_SCREEN
+                  ? colors.white
+                  : colors.gray_5D7285
+              }
+              style={styles.icon}
+            />
+          )}
+          onPress={() => {
+            onClose();
+            setSelectedItem(ROUTE_NAMES.ENTER_LEAD_SCREEN);
+            setScreen(ROUTE_NAMES.ENTER_LEAD_SCREEN);
+          
+          }}
+          labelStyle={{
+            color:
+              selectedItem === ROUTE_NAMES.ENTER_LEAD_SCREEN
+                ? colors.white
+                : colors.gray_5D7285,
+            fontSize: normalize(16),
+            fontFamily: Fonts.regular,
+          }}
+          style={{
+            backgroundColor:
+              selectedItem === ROUTE_NAMES.ENTER_LEAD_SCREEN
+                ? colors.primary
+                : colors.transparent,
+            marginBottom: wp(4),
+          }}
+        />
+        <DrawerItem
+          label={'Leads'}
+          icon={() => (
+            <Image
+              source={LocalImages.leads}
+              tintColor={
+                selectedItem === ROUTE_NAMES.LEAD_LIST
+                  ? colors.white
+                  : colors.gray_5D7285
+              }
+              style={styles.icon}
+            />
+          )}
+          onPress={() => {
+            onClose();
+            setSelectedItem(ROUTE_NAMES.LEAD_LIST);
+            setScreen(ROUTE_NAMES.LEAD_LIST);
+          }}
+          labelStyle={{
+            color:
+              selectedItem === ROUTE_NAMES.LEAD_LIST
+                ? colors.white
+                : colors.gray_5D7285,
+            fontSize: normalize(16),
+            fontFamily: Fonts.regular,
+          }}
+          style={{
+            backgroundColor:
+              selectedItem === ROUTE_NAMES.LEAD_LIST
+                ? colors.primary
+                : colors.transparent,
+            marginBottom: wp(4),
+          }}
+        />
+        <DrawerItem
+          label={'Search Customer'}
+          icon={() => (
+            <Image
+              source={LocalImages.customer}
+              tintColor={
+                selectedItem === ROUTE_NAMES.SEARCH_CUSTOMER
+                  ? colors.white
+                  : colors.gray_5D7285
+              }
+              style={styles.icon}
+            />
+          )}
+          onPress={() => {
+            onClose();
+            setSelectedItem(ROUTE_NAMES.SEARCH_CUSTOMER);
+            setScreen(ROUTE_NAMES.SEARCH_CUSTOMER);
+          }}
+          labelStyle={{
+            color:
+              selectedItem === ROUTE_NAMES.SEARCH_CUSTOMER
+                ? colors.white
+                : colors.gray_5D7285,
+            fontSize: isTablet() ? normalize(16) : normalize(15),
+            fontFamily: Fonts.regular,
+          }}
+          style={{
+            backgroundColor:
+              selectedItem === ROUTE_NAMES.SEARCH_CUSTOMER
+                ? colors.primary
+                : colors.transparent,
+            marginBottom: wp(4),
+          }}
+        />
+        <DrawerItem
+          label={'Logs'}
+          icon={() => (
+            <Image
+              source={LocalImages.logs}
+              tintColor={
+                selectedItem === ROUTE_NAMES.LOG_SCREEN
+                  ? colors.white
+                  : colors.gray_5D7285
+              }
+              style={styles.icon}
+            />
+          )}
+          onPress={() => {
+            onClose();
+            setSelectedItem(ROUTE_NAMES.LOG_SCREEN);
+            setScreen(ROUTE_NAMES.LOG_SCREEN);
+          }}
+          labelStyle={{
+            color:
+              selectedItem === ROUTE_NAMES.LOG_SCREEN
+                ? colors.white
+                : colors.gray_5D7285,
+            fontSize: normalize(16),
+            fontFamily: Fonts.regular,
+          }}
+          style={{
+            backgroundColor:
+              selectedItem === ROUTE_NAMES.LOG_SCREEN
+                ? colors.primary
+                : colors.transparent,
+            marginBottom: wp(4),
+          }}
+        />
+        <View style={styles.superAdminSection}>
+          <TouchableOpacity
+            style={styles.superAdminButton}
+            onPress={() => {
+              onClose();
+              setSelectedItem('Logout');
+              Utils.userLogout();
+            }}>
+            <SvgIcons.Logout
+              style={styles.icon}
+              color={colors.white}
+              width={wp(24)}
+              height={wp(24)}
+            />
+            <Text style={styles.superAdminText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
+        <FontText
+          pTop={wp(20)}
+          style={{textAlign: 'center'}}
+          fontFamily={Fonts.robotRegular}
+          size={normalize(16)}
+          color={colors.black}>
+          {`Version : ${DeviceInfo.getVersion()}\n Environment: ${ENV}`}
+        </FontText>
+      </View>
+    
   );
-};
+}
+
+// Main App Component with Drawer
+export default function Home({route}) {
+  
+  const user = route.params.user;
+  const [open, setOpen] = React.useState(false);
+  const [currentScreen, setCurrentScreen] = React.useState(ROUTE_NAMES.ENTER_LEAD_SCREEN);
+
+  const openDrawer = React.useCallback(() => {
+    setOpen(true);
+  }, []);
+
+  let screenComponent;
+  if (currentScreen === ROUTE_NAMES.ENTER_LEAD_SCREEN) {
+    screenComponent = <EnterDynamicLead openDrawer={openDrawer} />;
+  } else if (currentScreen === ROUTE_NAMES.LEAD_LIST) {
+    screenComponent = <LeadsListScreen openDrawer={openDrawer} />;
+  } else if (currentScreen === ROUTE_NAMES.SEARCH_CUSTOMER) {
+    screenComponent = <SearchCustomer openDrawer={openDrawer} />;
+  } else if (currentScreen === ROUTE_NAMES.LOG_SCREEN) {
+    screenComponent = <LogScreen openDrawer={openDrawer} />;
+  }
+
+  return (
+    <View style={{flex: 1}}>
+      <Drawer
+        open={open}
+        onOpen={() => setOpen(true)}
+        onClose={() => setOpen(false)}
+        renderDrawerContent={() => (
+          <CustomDrawerContent
+            user={user}
+            onClose={() => setOpen(false)}
+            setScreen={setCurrentScreen}
+          />
+        )}
+        drawerStyle={{backgroundColor: 'white'}}>
+        <View style={{flex: 1}}>{screenComponent}</View>
+      </Drawer>
+    </View>
+  );
+}
 
 // Styles
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  button: {
+    backgroundColor: '#2196F3',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  buttonText: {
+    color: 'white',
+  },
+  screenText: {
+    fontSize: 20,
+  },
   drawerContainer: {
     flex: 1,
-    backgroundColor: colors.white,
     padding: 20,
   },
   drawerItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-    marginBottom: wp(4),
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
-  drawerItemText: {
-    fontSize: normalize(16),
-    fontFamily: Fonts.regular,
-    marginLeft: 10,
-    color: colors.gray_5D7285,
+  drawerText: {
+    fontSize: 16,
   },
-  icon: {
-    width: wp(24),
-    height: wp(24),
+
+  drawerContent: {
+    flex: 1,
+    marginLeft: wp(16),
   },
   superAdminSection: {
     marginTop: 'auto',
     marginBottom: wp(150),
+    marginRight: wp(25),
   },
   superAdminButton: {
     flexDirection: 'row',
@@ -165,6 +376,16 @@ const styles = StyleSheet.create({
     fontSize: normalize(16),
     marginLeft: 10,
   },
+  appLogo: {
+    width: wp(69),
+    height: wp(69),
+  },
+  menu: {
+    alignSelf: 'flex-end',
+  },
+  icon: {
+    width: wp(24),
+    height: wp(24),
+    marginRight: wp(8),
+  },
 });
-
-export default Home;

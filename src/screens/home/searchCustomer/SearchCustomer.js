@@ -21,7 +21,7 @@ import {
 import {isTablet} from 'react-native-device-info';
 import customerService from 'services/customerService';
 
-const SearchCustomer = () => {
+const SearchCustomer = ({openDrawer}) => {
   const {startLoader, stopLoader} = useLoader(); // Use global loader
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -103,6 +103,7 @@ const SearchCustomer = () => {
     <View style={styles.container}>
       <DrawerHeader
         hasLeft
+        openDrawer={openDrawer}
         title={'Search Customer'}
         hasRight
         right={

@@ -35,6 +35,20 @@
 	<string/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
+	<key>NSCameraUsageDescription</key>
+<string>For taking photos</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to select documents.</string>
+
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>We need permission to save documents to your photo library.</string>
+
+<key>NSDocumentsDirectoryUsageDescription</key>
+<string>We need access to your documents to upload and share files.</string>
+
+<key>UIFileSharingEnabled</key>
+<true/>
+
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>

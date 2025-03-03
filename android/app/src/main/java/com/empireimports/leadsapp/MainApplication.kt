@@ -1,4 +1,4 @@
-package com.leads
+package com.empireimports.leadsapp
 
 import android.app.Application
 import com.facebook.react.PackageList

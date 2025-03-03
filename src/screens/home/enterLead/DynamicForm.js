@@ -14,7 +14,7 @@ import FontText from 'components/FontText';
 import useDidMountEffect from 'components/UseDidMountEffect';
 import {PREFERENCE} from 'constants/index';
 import {insertLog, insertRecord, updateSyncStatus} from 'helpers/dbHelpler';
-import {normalize, wp} from 'helpers/styles/responsive';
+import {isIOS, normalize, wp} from 'helpers/styles/responsive';
 import {Utils} from 'helpers/utils';
 import {isEmailValid, isPhoneValid} from 'helpers/validation';
 import {useLoader} from 'providers/LoaderProvider';
@@ -24,6 +24,7 @@ import {
   Alert,
   Image,
   Keyboard,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -33,7 +34,7 @@ import {
   View,
 } from 'react-native';
 
-import {launchCamera} from 'react-native-image-picker';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import RadioGroup from 'react-native-radio-buttons-group';
 import leadService from 'services/leadService';
 
@@ -643,22 +644,46 @@ const DynamicForm = ({}) => {
           );
         }
       } else {
-        result = await pick({
-          type: [fileType === 'image' ? types.images : types.allFiles],
-          destination: 'cachesDirectory',
-        });
-        const keyMapping = {
-          uri: 'fileCopyUri',
-          fileName: 'name',
-          fileSize: 'size',
-        };
+        if (fileType === 'image' && isIOS) {
+          const options = {
+            title: 'Select Avatar',
+            storageOptions: {
+              skipBackup: true,
+              path: 'images',
+            },
+          };
+          const response = await launchCamera(options);
+          result = response.assets[0];
+          const keyMapping = {
+            uri: 'fileCopyUri',
+            fileName: 'name',
+            fileSize: 'size',
+          };
 
-        result = Object.fromEntries(
-          Object.entries(result[0]).map(([key, value]) => [
-            keyMapping[key] || key,
-            value,
-          ]),
-        );
+          result = Object.fromEntries(
+            Object.entries(result).map(([key, value]) => [
+              keyMapping[key] || key,
+              value,
+            ]),
+          );
+        } else {
+          result = await pick({
+            type: [fileType === 'image' ? types.images : types.allFiles],
+            destination: 'cachesDirectory',
+          });
+          const keyMapping = {
+            uri: 'fileCopyUri',
+            fileName: 'name',
+            fileSize: 'size',
+          };
+
+          result = Object.fromEntries(
+            Object.entries(result[0]).map(([key, value]) => [
+              keyMapping[key] || key,
+              value,
+            ]),
+          );
+        }
       }
 
       // Check file size
@@ -1092,17 +1117,48 @@ const DynamicForm = ({}) => {
                     {field.label}
                     {field.required && <Text style={styles.required}>*</Text>}
                   </Text>
-                  <TouchableOpacity
-                    style={styles.fileButton}
-                    onPress={() =>
-                      handleSingleFileSelection(
-                        field.name,
-                        field.label,
-                        field.type === 'image' ? 'image' : 'file',
-                      )
-                    }>
-                    <Text>Select Files</Text>
-                  </TouchableOpacity>
+
+                  <View
+                    style={[
+                      styles.buttonContainer,
+                      {flexDirection: 'row', justifyContent: 'space-between'},
+                    ]}>
+                    <TouchableOpacity
+                      style={[styles.fileButton, {flex: 1, marginRight: 5}]}
+                      onPress={() =>
+                        handleSingleFileSelection(
+                          field.name,
+                          field.label,
+                          'image',
+                          'camera',
+                        )
+                      }>
+                      <Text>From Camera</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.fileButton, {flex: 1, marginLeft: 5}]}
+                      onPress={() =>
+                        handleSingleFileSelection(
+                          field.name,
+                          field.label,
+                          'image',
+                        )
+                      }>
+                      <Text>From Gallery</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.fileButton, {flex: 1, marginLeft: 5}]}
+                      onPress={() =>
+                        handleSingleFileSelection(
+                          field.name,
+                          field.label,
+                          field.type === 'file',
+                        )
+                      }>
+                      <Text>Browse Files</Text>
+                    </TouchableOpacity>
+                  </View>
+
                   <View style={styles.filePreviewContainer}>
                     {fileInputs[field.name]?.map((file, i) => (
                       <Pressable

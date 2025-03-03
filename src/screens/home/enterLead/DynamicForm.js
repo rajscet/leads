@@ -19,6 +19,7 @@ import {Utils} from 'helpers/utils';
 import {isEmailValid, isPhoneValid} from 'helpers/validation';
 import {useLoader} from 'providers/LoaderProvider';
 import React, {useRef, useState} from 'react';
+import {pick, types} from '@react-native-documents/picker';
 import {
   Alert,
   Image,
@@ -31,7 +32,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import DocumentPicker from '@react-native-documents/picker';
+
 import {launchCamera} from 'react-native-image-picker';
 import RadioGroup from 'react-native-radio-buttons-group';
 import leadService from 'services/leadService';
@@ -642,14 +643,22 @@ const DynamicForm = ({}) => {
           );
         }
       } else {
-        result = await DocumentPicker.pick({
-          type: [
-            fileType === 'image'
-              ? DocumentPicker.types.images
-              : DocumentPicker.types.allFiles,
-          ],
+        result = await pick({
+          type: [fileType === 'image' ? types.images : types.allFiles],
           destination: 'cachesDirectory',
         });
+        const keyMapping = {
+          uri: 'fileCopyUri',
+          fileName: 'name',
+          fileSize: 'size',
+        };
+
+        result = Object.fromEntries(
+          Object.entries(result[0]).map(([key, value]) => [
+            keyMapping[key] || key,
+            value,
+          ]),
+        );
       }
 
       // Check file size

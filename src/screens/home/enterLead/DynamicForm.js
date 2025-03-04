@@ -37,6 +37,7 @@ import {
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import RadioGroup from 'react-native-radio-buttons-group';
 import leadService from 'services/leadService';
+import { isTablet } from 'react-native-device-info';
 
 const DynamicForm = ({}) => {
   const {startLoader, stopLoader} = useLoader();
@@ -908,10 +909,11 @@ const DynamicForm = ({}) => {
                     ref={ref => (inputRefs.current[index] = ref)}
                     style={[
                       styles.input,
-                      {height: field.type === 'textarea' ? 120 : 60},
+                      {height: field.type === 'textarea' ? isTablet() ? wp(120) : wp(150) : isTablet() ? wp(30) : wp(48)},
                       focusedField === field.name && {borderColor: '#754FFF'},
                     ]}
                     placeholder={field.label}
+                    placeholderTextColor={colors.teal_757575}
                     value={formValues[field.name] || ''}
                     onChangeText={value => {
                       if (field.type === 'phone') {

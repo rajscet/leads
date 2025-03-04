@@ -15,11 +15,12 @@ import {
   Pressable,
   Modal,
 } from 'react-native';
-import { hp, normalize, wp } from 'helpers/styles/responsive';
+import {hp, normalize, wp} from 'helpers/styles/responsive';
 import colors from 'assets/colors';
 import SvgIcons from 'assets/svgs/svgIcons';
 import Fonts from 'assets/fonts/fonts';
 import FontText from 'components/FontText';
+import {isTablet} from 'react-native-device-info';
 
 const Dropdown = forwardRef(
   (
@@ -83,21 +84,18 @@ const Dropdown = forwardRef(
           )}
         </FontText>
 
-        <View
+        <Pressable
           style={[
             styles.inputContainer,
             style,
-            { backgroundColor: disabled ? colors.gray_D4D4D4 : colors.white },
-          ]}>
-          <Text
-            ref={textRef}
-            numberOfLines={1}
-            style={styles.input}
-            onPress={() => {
-              if (!disabled) {
-                setIsModalVisible(true);
-              }
-            }}>
+            {backgroundColor: disabled ? colors.gray_D4D4D4 : colors.white},
+          ]}
+          onPress={() => {
+            if (!disabled) {
+              setIsModalVisible(true);
+            }
+          }}>
+          <Text ref={textRef} numberOfLines={1} style={styles.input}>
             {value}
           </Text>
           <SvgIcons.NextIcon
@@ -106,7 +104,7 @@ const Dropdown = forwardRef(
             color={colors.gray_868686}
             style={styles.downArrow}
           />
-        </View>
+        </Pressable>
         <Modal
           visible={isModalVisible}
           transparent={true}
@@ -140,7 +138,7 @@ const Dropdown = forwardRef(
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.flatList}
                 data={data}
-                renderItem={({ item }) => (
+                renderItem={({item}) => (
                   <>
                     <Pressable
                       style={styles.flatlistContainer}
@@ -175,7 +173,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gray_B9B9B9,
   },
   inputContainer: {
-    height: wp(35),
+    height: isTablet() ? wp(30) : wp(50),
     flexDirection: 'row',
     borderRadius: wp(4),
     paddingHorizontal: wp(12),
@@ -186,7 +184,7 @@ const styles = StyleSheet.create({
     borderColor: colors.teal_CCCBCB,
   },
   downArrow: {
-    transform: [{ rotate: '90deg' }],
+    transform: [{rotate: '90deg'}],
   },
   flatList: {
     marginTop: 4,
@@ -215,7 +213,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(10), // Horizontal spacing
     marginVertical: hp(40), // Vertical spacing
   },
-  
+
   modalView: {
     width: '100%',
     backgroundColor: colors.white,
@@ -225,7 +223,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     elevation: 5, // Adds shadow on Android
     shadowColor: '#000', // Shadow on iOS
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },

@@ -6,10 +6,9 @@ import EnterDynamicLead from './enterLead/EnterDynamicLead';
 import LeadsListScreen from './LeadsList/LeadsListScreen';
 import SearchCustomer from './searchCustomer/SearchCustomer';
 import LogScreen from './logs/LogScreen';
-import {DrawerContentScrollView} from 'screens/drawer/DrawerContentScrollView';
 import { DrawerItem } from 'screens/drawer/DrawerItem';
 import LocalImages from 'assets/images/localImages';
-import { normalize, wp } from 'helpers/styles/responsive';
+import { hp, normalize, viewportHeight, viewportWidth, wp } from 'helpers/styles/responsive';
 import Fonts from 'assets/fonts/fonts';
 import SvgIcons from 'assets/svgs/svgIcons';
 import FontText from 'components/FontText';
@@ -17,71 +16,6 @@ import colors from 'assets/colors';
 import DeviceInfo, { isTablet } from 'react-native-device-info';
 import { Utils } from 'helpers/utils';
 
-// Screen Components
-function HomeScreen({openDrawer}) {
-  return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.button} onPress={openDrawer}>
-        <Text style={styles.buttonText}>Open drawer</Text>
-      </TouchableOpacity>
-      <Text style={styles.screenText}>Home Screen</Text>
-    </View>
-  );
-}
-
-function SettingsScreen({openDrawer}) {
-  return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.button} onPress={openDrawer}>
-        <Text style={styles.buttonText}>Open drawer</Text>
-      </TouchableOpacity>
-      <Text style={styles.screenText}>Settings Screen</Text>
-    </View>
-  );
-}
-
-function ProfileScreen({openDrawer}) {
-  return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.button} onPress={openDrawer}>
-        <Text style={styles.buttonText}>Open drawer</Text>
-      </TouchableOpacity>
-      <Text style={styles.screenText}>Profile Screen</Text>
-    </View>
-  );
-}
-
-// Drawer Content Component
-function DrawerContent({onClose, setScreen}) {
-  return (
-    <View style={styles.drawerContainer}>
-      <TouchableOpacity
-        style={styles.drawerItem}
-        onPress={() => {
-          setScreen('Home');
-          onClose();
-        }}>
-        <Text style={styles.drawerText}>Home</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.drawerItem}
-        onPress={() => {
-          setScreen('Settings');
-          onClose();
-        }}>
-        <Text style={styles.drawerText}>Settings</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.drawerItem}
-        onPress={() => {
-          setScreen('Profile');
-          onClose();
-        }}>
-        <Text style={styles.drawerText}>Profile</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
 
 function CustomDrawerContent({user, onClose, setScreen}) {
   const [selectedItem, setSelectedItem] = React.useState(
@@ -91,7 +25,7 @@ function CustomDrawerContent({user, onClose, setScreen}) {
   return (
  
       <View style={styles.drawerContent}>
-        <View style={{flexDirection: 'row', marginVertical: wp(30)}}>
+        <View style={{flexDirection: 'row', marginVertical: wp(30), width: hp(250)}}>
           <SvgIcons.DrawerMenu
             style={{marginLeft: wp(8), marginRight: wp(14)}}
           />
@@ -344,6 +278,7 @@ const styles = StyleSheet.create({
   drawerContainer: {
     flex: 1,
     padding: 20,
+    width: '100%'
   },
   drawerItem: {
     paddingVertical: 15,
@@ -357,6 +292,8 @@ const styles = StyleSheet.create({
   drawerContent: {
     flex: 1,
     marginLeft: wp(16),
+    marginBottom: wp(24)
+    
   },
   superAdminSection: {
     marginTop: 'auto',

@@ -1,6 +1,7 @@
 import { PlatformPressable, Text } from '@react-navigation/elements';
 import { type Route, useTheme } from '@react-navigation/native';
 import Color from 'color';
+import { hp, viewportWidth, wp } from 'helpers/styles/responsive';
 import * as React from 'react';
 import {
   type StyleProp,
@@ -135,7 +136,7 @@ export function DrawerItem(props: Props) {
     <View
       collapsable={false}
       {...rest}
-      style={[styles.container, { borderRadius, backgroundColor }, style]}
+      style={[styles.container, { borderRadius, backgroundColor, width : hp(300) }, style]}
     >
       <PlatformPressable
         testID={testID}
@@ -148,7 +149,7 @@ export function DrawerItem(props: Props) {
         hoverEffect={{ color }}
         href={href}
       >
-        <View style={[styles.wrapper, { borderRadius }]}>
+        <View style={[styles.wrapper, { borderRadius}]}>
           {iconNode}
           <View style={[styles.label, { marginStart: iconNode ? 12 : 0 }]}>
             {typeof label === 'string' ? (

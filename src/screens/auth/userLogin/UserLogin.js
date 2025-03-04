@@ -344,60 +344,52 @@ export default function UserLogin({navigation}) {
   }, [locations]);
 
   return (
-    <View style={styles.container}>
-      <Header hasLeft={false} title={'Login'} />
-      
-      <>
-        <SegmentedControl
-          tintColor={colors.gray_5D7285}
-          backgroundColor={'#462201'}
-          style={styles.segment}
-          values={['Sales Person', 'Super Admin']}
-          fontStyle={{fontSize: normalize(16), fontFamily: Fonts.regular}}
-          activeFontStyle={{
-            fontSize: normalize(16),
-            fontFamily: Fonts.regular,
-          }}
-          selectedIndex={selectedType}
-          onChange={event => {
-            setSelectedType(event.nativeEvent.selectedSegmentIndex);
-          }}
-        />
-        
-        <View style={styles.subContainer}>
-        <Button onPress={verifyOTP} style={styles.verifyOTPButton}>
-          <FontText
-            fontFamily={Fonts.robotRegular}
-            size={normalize(16)}
-            color={colors.white}>
-            {'Submit'}
-          </FontText>
-        </Button>
-          <Dropdown
-            ref={userRef}
-            title={'User'}
-            isRequired
-            placeHolder={'Select User'}
-            onItemSelected={item => {
-              console.log('selected USER', item);
-              setSelectedUser(item);
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <Header hasLeft={false} title={'Login'} />
+
+        <>
+          <SegmentedControl
+            tintColor={colors.gray_5D7285}
+            backgroundColor={'#462201'}
+            style={styles.segment}
+            values={['Sales Person', 'Super Admin']}
+            fontStyle={{fontSize: normalize(16), fontFamily: Fonts.regular}}
+            activeFontStyle={{
+              fontSize: normalize(16),
+              fontFamily: Fonts.regular,
             }}
-            data={users.map(user => ({
-              ...user,
-              full_name: `${user.first_name} ${user.last_name}`,
-            }))}
-            keyName={'full_name'}
-            val={selectedUser}
+            selectedIndex={selectedType}
+            onChange={event => {
+              setSelectedType(event.nativeEvent.selectedSegmentIndex);
+            }}
           />
-          <FontText
-            size={normalize(15)}
-            color={colors.black_222222}
-            fontFamily={Fonts.robotBold}
-            pTop={wp(4)}
-            pBottom={hp(4)}>
-            {'PIN'}
-          </FontText>
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.subContainer}>
+            <Dropdown
+              ref={userRef}
+              title={'User'}
+              isRequired
+              placeHolder={'Select User'}
+              onItemSelected={item => {
+                console.log('selected USER', item);
+                setSelectedUser(item);
+              }}
+              data={users.map(user => ({
+                ...user,
+                full_name: `${user.first_name} ${user.last_name}`,
+              }))}
+              keyName={'full_name'}
+              val={selectedUser}
+            />
+            <FontText
+              size={normalize(15)}
+              color={colors.black_222222}
+              fontFamily={Fonts.robotBold}
+              pTop={wp(4)}
+              pBottom={hp(4)}>
+              {'PIN'}
+            </FontText>
+
             {/* OTP Inputs */}
             <View style={styles.otpContainer}>
               {otp.map((value, index) => (
@@ -424,31 +416,39 @@ export default function UserLogin({navigation}) {
                 />
               ))}
             </View>
-          </TouchableWithoutFeedback>
-          <Dropdown
-            ref={locationRef}
-            title={'Location'}
-            isRequired
-            placeHolder={'Select Location'}
-            onItemSelected={item => {
-              setSelectedLocation(item);
-            }}
-            data={locations}
-            keyName={'name'}
-            val={selectedLocation?.name || ''}
-          />
-        </View>
-        
-        <FontText
-          pBottom={wp(20)}
-          style={{textAlign: 'center'}}
-          fontFamily={Fonts.robotRegular}
-          size={normalize(16)}
-          color={colors.black}>
-          {`Version : ${DeviceInfo.getVersion()}\n Environment: ${ENV}`}
-        </FontText>
-      </>
-    </View>
+
+            <Dropdown
+              ref={locationRef}
+              title={'Location'}
+              isRequired
+              placeHolder={'Select Location'}
+              onItemSelected={item => {
+                setSelectedLocation(item);
+              }}
+              data={locations}
+              keyName={'name'}
+              val={selectedLocation?.name || ''}
+            />
+          </View>
+          <Button onPress={verifyOTP} style={styles.verifyOTPButton}>
+            <FontText
+              fontFamily={Fonts.robotRegular}
+              size={normalize(16)}
+              color={colors.white}>
+              {'Submit'}
+            </FontText>
+          </Button>
+          <FontText
+            pBottom={wp(20)}
+            style={{textAlign: 'center'}}
+            fontFamily={Fonts.robotRegular}
+            size={normalize(16)}
+            color={colors.black}>
+            {`Version : ${DeviceInfo.getVersion()}\n Environment: ${ENV}`}
+          </FontText>
+        </>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 

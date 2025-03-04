@@ -2,20 +2,22 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import colors from 'assets/colors';
 import Fonts from 'assets/fonts/fonts';
 import Button from 'components/Button';
+import DatePicker from 'components/DatePicker';
 import FontText from 'components/FontText';
 import Header from 'components/header';
-import { PREFERENCE, ROUTE_NAMES } from 'constants/index';
-import { hp, normalize, wp } from 'helpers/styles/responsive';
+import {PREFERENCE, ROUTE_NAMES} from 'constants/index';
+import {hp, normalize, wp} from 'helpers/styles/responsive';
 import moment from 'moment';
-import { resetNavigateTo } from 'navigation/navigationHelper';
-import { useLoader } from 'providers/LoaderProvider';
-import React, { useState, useRef } from 'react';
+import {resetNavigateTo} from 'navigation/navigationHelper';
+import {useLoader} from 'providers/LoaderProvider';
+import React, {useState} from 'react';
 import {
   Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  Text,
   TextInput,
   TouchableWithoutFeedback,
   View,
@@ -23,14 +25,15 @@ import {
 import DeviceInfo from 'react-native-device-info';
 import authServices from 'services/authServices';
 
-const VerifyPINScreen = ({ navigation, route }) => {
+const VerifyPINScreen = ({navigation, route}) => {
   const inputRefs = Array(6)
     .fill()
-    .map(() => useRef(null)); // Create refs for OTP inputs
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [focusedIndex, setFocusedIndex] = useState(null);
-  const { startLoader, stopLoader } = useLoader();
-  const { session } = route.params;
+    .map(() => React.useRef(null)); // Create refs for all 6 OTP inputs
+  const [otp, setOtp] = useState(['', '', '', '', '', '']); // Initial OTP state
+  const [focusedIndex, setFocusedIndex] = useState(null); // To track which input is focused
+  const {startLoader, stopLoader} = useLoader();
+  const {session} = route.params;
+  const endDateRef = React.useRef();
 
   const handleChangeText = (text, index) => {
     if (text.length === 1) {
@@ -46,14 +49,17 @@ const VerifyPINScreen = ({ navigation, route }) => {
   };
 
   const handleKeyPress = (event, index) => {
-    const { key } = event.nativeEvent;
+    const {key} = event.nativeEvent;
 
     if (key === 'Backspace') {
+      // If Backspace is pressed
       if (otp[index] === '') {
+        // Move to the previous input if current is already empty
         if (index > 0) {
           inputRefs[index - 1].current.focus();
         }
       } else {
+        // Clear the current input on Backspace
         const newOtp = [...otp];
         newOtp[index] = '';
         setOtp(newOtp);
@@ -76,6 +82,7 @@ const VerifyPINScreen = ({ navigation, route }) => {
           },
         };
         const response = await authServices.doTabletRegister(params);
+        console.log(response);
         if (response.status === true) {
           await AsyncStorage.setItem(PREFERENCE.IS_TABLET_LOGGED_IN, 'true');
           await AsyncStorage.setItem(
@@ -102,29 +109,28 @@ const VerifyPINScreen = ({ navigation, route }) => {
       <Header
         hasLeft
         title={'Verify PIN for your Tablet'}
-        onBackPress={() => navigation.goBack()}
+        onBackPress={() => {
+          navigation.goBack();
+        }}
       />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <FontText
+            pTop={wp(20)}
+            color={colors.black}
+            size={normalize(20)}>{`Session ID : ${session}`}</FontText>
 
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        
-        {/* Wrap everything in TouchableWithoutFeedback to dismiss keyboard */}
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <FontText
-              pTop={wp(20)}
-              color={colors.black}
-              size={normalize(20)}>{`Session ID : ${session}`}</FontText>
-
-            {/* OTP Inputs */}
+          {/* OTP Inputs */}
+          <>
             <View style={styles.otpContainer}>
               <FontText
                 size={normalize(15)}
                 color={colors.black_222222}
                 fontFamily={Fonts.robotBold}
                 pTop={wp(4)}
-                style={{ alignSelf: 'center' }}
+                style={{alignSelf: 'center'}}
                 pRight={wp(8)}
                 pBottom={hp(4)}>
                 {'PIN'}
@@ -132,16 +138,16 @@ const VerifyPINScreen = ({ navigation, route }) => {
               {otp.map((value, index) => (
                 <TextInput
                   key={index}
-                  ref={inputRefs[index]}
+                  ref={inputRefs[index]} // Assign ref to each input
                   style={[
                     styles.otpInput,
                     {
                       borderColor:
                         focusedIndex === index
-                          ? '#754FFF'
+                          ? '#754FFF' // Focus color
                           : otp[index] !== ''
-                          ? colors.primary
-                          : '#888',
+                          ? colors.primary // Color when digit is present
+                          : '#888', // Default grey
                     },
                   ]}
                   keyboardType="number-pad"
@@ -149,30 +155,29 @@ const VerifyPINScreen = ({ navigation, route }) => {
                   value={value}
                   onChangeText={text => handleChangeText(text, index)}
                   onKeyPress={e => handleKeyPress(e, index)}
-                  onFocus={() => setFocusedIndex(index)}
-                  onBlur={() => setFocusedIndex(null)}
+                  onFocus={() => setFocusedIndex(index)} // Set focused index
+                  onBlur={() => setFocusedIndex(null)} // Clear focused index on blur
                 />
               ))}
             </View>
-
-            <Button
-              onPress={verifyOTP}
-              style={{
-                width: '92%',
-                marginTop: 'auto',
-                marginHorizontal: wp(20),
-                marginBottom: wp(20),
-              }}>
-              <FontText
-                fontFamily={Fonts.robotRegular}
-                size={normalize(16)}
-                color={colors.white}>
-                {'Authenticate'}
-              </FontText>
-            </Button>
-          </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+          </>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
+      <Button
+        onPress={verifyOTP}
+        style={{
+          width: '92%',
+          marginTop: 'auto',
+          marginHorizontal: wp(20),
+          marginBottom: wp(20),
+        }}>
+        <FontText
+          fontFamily={Fonts.robotRegular}
+          size={normalize(16)}
+          color={colors.white}>
+          {'Authenticate'}
+        </FontText>
+      </Button>
     </>
   );
 };
@@ -183,6 +188,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.white,
     paddingHorizontal: 20,
+  },
+  title: {
+    fontSize: normalize(25),
+    fontFamily: Fonts.inter,
+    marginBottom: wp(20),
+    color: colors.black,
+    fontWeight: 'bold',
+    marginTop: wp(113),
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  emailText: {
+    color: colors.black,
+    fontFamily: Fonts.inter,
+  },
+  timerText: {
+    fontSize: 16,
+    color: colors.primary,
+    marginBottom: 20,
+    marginTop: wp(48),
   },
   otpContainer: {
     flexDirection: 'row',
@@ -199,6 +228,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     fontSize: 18,
     marginHorizontal: 5,
+  },
+  resendText: {
+    fontSize: normalize(14),
+    color: '#888',
+    fontFamily: Fonts.inter,
+    marginBottom: 30,
+  },
+  resendLink: {
+    fontWeight: 'bold',
   },
 });
 

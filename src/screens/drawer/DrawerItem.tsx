@@ -10,6 +10,7 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
+import { isTablet } from 'react-native-device-info';
 
 type Props = {
   /**
@@ -136,7 +137,7 @@ export function DrawerItem(props: Props) {
     <View
       collapsable={false}
       {...rest}
-      style={[styles.container, { borderRadius, backgroundColor, width : hp(300) }, style]}
+      style={[styles.container, { borderRadius, backgroundColor, width : isTablet() ? wp(200) : wp(250) }, style]}
     >
       <PlatformPressable
         testID={testID}

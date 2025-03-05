@@ -66,7 +66,7 @@ const DynamicForm = ({}) => {
   const inputRefs = useRef([]);
   const datePickersRef = useRef({}); // Ref for multiple DatePickers
   const [formData, setFormData] = useState([]);
-  const MAX_FILE_SIZE = isAndroid  ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
+  const MAX_FILE_SIZE = isAndroid ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
   const [maxContacts, setMaxContacts] = useState(0);
   const passwordRegex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -630,6 +630,7 @@ const DynamicForm = ({}) => {
         };
 
         const response = await launchCamera(options);
+        console.log('response', response);
 
         if (!response.didCancel && response.assets) {
           result = response.assets[0];
@@ -656,115 +657,118 @@ const DynamicForm = ({}) => {
             },
           };
           const response = await launchImageLibrary(options);
-          result = response.assets[0];
-          const keyMapping = {
-            uri: 'fileCopyUri',
-            fileName: 'name',
-            fileSize: 'size',
-          };
+          if (!response.didCancel && response.assets) {
+            result = response.assets[0];
+            const keyMapping = {
+              uri: 'fileCopyUri',
+              fileName: 'name',
+              fileSize: 'size',
+            };
 
-          result = Object.fromEntries(
-            Object.entries(result).map(([key, value]) => [
-              keyMapping[key] || key,
-              value,
-            ]),
-          );
+            result = Object.fromEntries(
+              Object.entries(result).map(([key, value]) => [
+                keyMapping[key] || key,
+                value,
+              ]),
+            );
+          }
         } else {
           result = await pick({
             type: [types.allFiles],
             destination: 'cachesDirectory',
           });
-          const keyMapping = {
-            uri: 'fileCopyUri',
-            fileName: 'name',
-            fileSize: 'size',
-          };
 
-          result = Object.fromEntries(
-            Object.entries(result[0]).map(([key, value]) => [
-              keyMapping[key] || key,
-              value,
-            ]),
+          if (result && Array.isArray(result) && result.length > 0) {
+            const keyMapping = {
+              uri: 'fileCopyUri',
+              fileName: 'name',
+              fileSize: 'size',
+            };
+
+            result = Object.fromEntries(
+              Object.entries(result[0]).map(([key, value]) => [
+                keyMapping[key] || key,
+                value,
+              ]),
+            );
+          }
+        }
+      }
+
+      if (result.fileCopyUri) {
+        // Check file size
+        if (result.size > MAX_FILE_SIZE) {
+          Alert.alert(
+            'File Too Large',
+            `The file "${result.name}" exceeds the maximum size of 5 MB.`,
           );
+          return; // Exit if file exceeds size limit
         }
-      }
 
-      // Check file size
-      if (result.size > MAX_FILE_SIZE) {
-        Alert.alert(
-          'File Too Large',
-          `The file "${result.name}" exceeds the maximum size of 5 MB.`,
+        // Check if file already exists in the array
+        const existingFiles = fileInputs[fieldName] || [];
+        const isDuplicate = existingFiles.some(
+          file => file.uri === result.uri || file.filename === result.name,
         );
-        return; // Exit if file exceeds size limit
-      }
 
-      // Check if file already exists in the array
-      const existingFiles = fileInputs[fieldName] || [];
-      const isDuplicate = existingFiles.some(
-        file => file.uri === result.uri || file.filename === result.name,
-      );
-
-      if (isDuplicate) {
-        Alert.alert(
-          'Duplicate File',
-          `The file "${result.name}" is already selected.`,
-        );
-        return; // Exit if the file is a duplicate
-      }
-
-      let fileData = {
-        uri: result.fileCopyUri,
-        name: result.name || '',
-        liveUrl: '',
-        isSync: 0,
-        mime: result.type,
-        size: result.size, // Include size for reference
-        isURLSync: 0,
-      };
-
-      if (fieldName === 'business_card') {
-        await processImage(result.fileCopyUri);
-      }
-
-      if (isConnected === true) {
-        const location = await uploadFile(fileData);
-        if (location?.Location) {
-          fileData.liveUrl = location.Location;
-          fileData.isSync = 1;
+        if (isDuplicate) {
+          Alert.alert(
+            'Duplicate File',
+            `The file "${result.name}" is already selected.`,
+          );
+          return; // Exit if the file is a duplicate
         }
-      }
 
-      if (fieldName === 'business_card') {
-        setFileInputs(prev => ({
-          ...prev,
-          [fieldName]: [fileData],
-        }));
-        setFormValues(prev => ({
-          ...prev,
-          [fieldName]: [fileData],
-        }));
-      } else {
-        setFileInputs(prev => ({
-          ...prev,
-          [fieldName]: prev[fieldName]
-            ? [...prev[fieldName], fileData]
-            : [fileData],
-        }));
-        setFormValues(prev => ({
-          ...prev,
-          [fieldName]: prev[fieldName]
-            ? [...prev[fieldName], fileData]
-            : [fileData],
-        }));
-      }
+        let fileData = {
+          uri: result.fileCopyUri,
+          name: result.name || '',
+          liveUrl: '',
+          isSync: 0,
+          mime: result.type,
+          size: result.size, // Include size for reference
+          isURLSync: 0,
+        };
 
-      setErrors(prev => ({...prev, [fieldName]: null}));
+        if (fieldName === 'business_card') {
+          await processImage(result.fileCopyUri);
+        }
+
+        if (isConnected === true) {
+          const location = await uploadFile(fileData);
+          if (location?.Location) {
+            fileData.liveUrl = location.Location;
+            fileData.isSync = 1;
+          }
+        }
+
+        if (fieldName === 'business_card') {
+          setFileInputs(prev => ({
+            ...prev,
+            [fieldName]: [fileData],
+          }));
+          setFormValues(prev => ({
+            ...prev,
+            [fieldName]: [fileData],
+          }));
+        } else {
+          setFileInputs(prev => ({
+            ...prev,
+            [fieldName]: prev[fieldName]
+              ? [...prev[fieldName], fileData]
+              : [fileData],
+          }));
+          setFormValues(prev => ({
+            ...prev,
+            [fieldName]: prev[fieldName]
+              ? [...prev[fieldName], fileData]
+              : [fileData],
+          }));
+        }
+
+        setErrors(prev => ({...prev, [fieldName]: null}));
+      }
     } catch (err) {
-      if (DocumentPicker.isCancel(err)) {
-        console.log('User cancelled document picker');
-      } else {
-        console.error(err);
-      }
+      console.error(err);
     }
   };
 
@@ -1165,7 +1169,7 @@ const DynamicForm = ({}) => {
                             field.name,
                             field.label,
                             'image',
-                            'gallery'
+                            'gallery',
                           )
                         }>
                         <Text>From Gallery</Text>
@@ -1230,7 +1234,7 @@ const DynamicForm = ({}) => {
                             field.name,
                             field.label,
                             'image',
-                            'gallery'
+                            'gallery',
                           )
                         }>
                         <Text>From Gallery</Text>

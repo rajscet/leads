@@ -143,7 +143,7 @@ const LeadListItem = ({
 
   return (
     <Pressable
-      style={[styles.mainContainer, globalStyle.shadow]}
+      style={[styles.mainContainer, styles.card]}
       onPress={() => {
         navigateTo(ROUTE_NAMES.LEAD_DETAIL, {
           data,
@@ -300,6 +300,14 @@ const styles = StyleSheet.create({
     transform: [{translateY: -wp(5)}],
     fontSize: 16,
     color: colors.gray_B9B9B9,
+  },
+  card: {
+    flex: 1,
+    backgroundColor: '#FFF',
+    padding: 12,
+    margin: 6,
+    borderRadius: 8,
+    elevation: 2,
   },
 });
 

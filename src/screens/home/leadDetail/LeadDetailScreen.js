@@ -23,6 +23,7 @@ import LeadAttachment from './LeadAttachment';
 import LeadTextDetail from './LeadTextDetail';
 import {PREFERENCE} from 'constants/index';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { isTablet } from 'react-native-device-info';
 
 
 const LeadDetailScreen = ({route, navigation}) => {
@@ -304,7 +305,7 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(16),
     borderWidth: 1,
     borderColor: colors.blue_2C79FF,
-    height: wp(30),
+    height: isTablet() ? wp(30) : wp(48),
     marginVertical: wp(8),
   },
 });

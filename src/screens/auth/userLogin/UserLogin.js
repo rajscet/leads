@@ -23,7 +23,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import DeviceInfo from 'react-native-device-info';
+import DeviceInfo, { isTablet } from 'react-native-device-info';
 import {compare} from 'react-native-simple-bcrypt';
 import authServices from 'services/authServices';
 import leadService from 'services/leadService';
@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(24),
     borderWidth: 1,
     borderColor: colors.blue_2C79FF,
-    height: wp(30),
+    height: isTablet() ? wp(30) : wp(48),
     marginVertical: wp(16),
   },
 });

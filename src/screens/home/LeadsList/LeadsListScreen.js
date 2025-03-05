@@ -6,6 +6,7 @@ import {normalize, wp} from 'helpers/styles/responsive';
 import React, {useMemo} from 'react';
 import {StyleSheet, View} from 'react-native';
 import LeadsList from './LeadsList';
+import { isTablet } from 'react-native-device-info';
 
 export default function LeadsListScreen({openDrawer}) {
   const [selectedType, setSelectedType] = React.useState(0);
@@ -18,10 +19,11 @@ export default function LeadsListScreen({openDrawer}) {
       <DrawerHeader openDrawer={openDrawer} hasLeft title={'Leads'} />
 
       <View style={styles.screen}>
+        <View style={styles.segmentContainer} >
         <SegmentedControl
           tintColor={colors.gray_5D7285}
           backgroundColor={'#462201'}
-          style={styles.segment} 
+          style={styles.segment}
           values={['Saved Leads', 'Sync Leads']}
           fontStyle={{fontSize: normalize(14), fontFamily: Fonts.regular}}
           activeFontStyle={{fontSize: normalize(14), fontFamily: Fonts.regular}}
@@ -30,6 +32,7 @@ export default function LeadsListScreen({openDrawer}) {
             setSelectedType(event.nativeEvent.selectedSegmentIndex);
           }}
         />
+        </View>
         {selectedType === 1 ? sentList : savedList}
       </View>
     </View>
@@ -44,7 +47,12 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(16),
     borderWidth: 1,
     borderColor: colors.blue_2C79FF,
-    height: wp(30),
+    height: isTablet() ? wp(30) : wp(48),
     marginBottom: wp(8),
+  },
+  segmentContainer: {
+    borderRadius: 20, // Increase border radius
+    overflow: 'hidden', // Ensure rounded corners apply correctly
+    height: isTablet() ? wp(30) : wp(48), // Increase height
   },
 });

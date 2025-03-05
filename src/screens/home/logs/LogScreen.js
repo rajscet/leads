@@ -65,7 +65,7 @@ const LogScreen = ({openDrawer}) => {
   };
 
   const renderLogItem = ({item}) => (
-    <View style={[styles.logItem, globalStyle.shadow]}>
+    <View style={[styles.logItem, styles.card]}>
       <Text style={styles.title}>{item.title}</Text>
       <Text>{item.desc}</Text>
       <Text>{item.info1}</Text>
@@ -188,6 +188,14 @@ const styles = {
     backgroundColor: 'red',
     marginBottom: 10,
     width: '100%',
+  },
+  card: {
+    flex: 1,
+    backgroundColor: '#FFF',
+    padding: 12,
+    margin: 6,
+    borderRadius: 8,
+    elevation: 2,
   },
 };
 

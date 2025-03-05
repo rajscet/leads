@@ -14,7 +14,7 @@ import FontText from 'components/FontText';
 import useDidMountEffect from 'components/UseDidMountEffect';
 import {PREFERENCE} from 'constants/index';
 import {insertLog, insertRecord, updateSyncStatus} from 'helpers/dbHelpler';
-import {isIOS, normalize, wp} from 'helpers/styles/responsive';
+import {isAndroid, isIOS, normalize, wp} from 'helpers/styles/responsive';
 import {Utils} from 'helpers/utils';
 import {isEmailValid, isPhoneValid} from 'helpers/validation';
 import {useLoader} from 'providers/LoaderProvider';
@@ -24,6 +24,7 @@ import {
   Alert,
   Image,
   Keyboard,
+  KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
@@ -37,7 +38,7 @@ import {
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import RadioGroup from 'react-native-radio-buttons-group';
 import leadService from 'services/leadService';
-import { isTablet } from 'react-native-device-info';
+import {isTablet} from 'react-native-device-info';
 
 const DynamicForm = ({}) => {
   const {startLoader, stopLoader} = useLoader();
@@ -65,12 +66,13 @@ const DynamicForm = ({}) => {
   const inputRefs = useRef([]);
   const datePickersRef = useRef({}); // Ref for multiple DatePickers
   const [formData, setFormData] = useState([]);
-  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB in bytes
+  const MAX_FILE_SIZE = isAndroid  ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
   const [maxContacts, setMaxContacts] = useState(0);
   const passwordRegex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
   const dropdownRefs = useRef({});
   const [currentFormIndex, setCurrentFormIndex] = useState(0);
+  const keyboardVerticalOffset = Platform.OS === 'ios' ? 40 : 0;
 
   const processImage = async uri => {
     try {
@@ -624,7 +626,7 @@ const DynamicForm = ({}) => {
       if (picker === 'camera') {
         const options = {
           mediaType: 'photo',
-          quality: fieldName === 'business_card' ? 1 : 0.5,
+          quality: fieldName === isAndroid ? 1 : 0.5,
         };
 
         const response = await launchCamera(options);
@@ -645,15 +647,15 @@ const DynamicForm = ({}) => {
           );
         }
       } else {
-        if (fileType === 'image' && isIOS) {
+        if (picker === 'gallery') {
           const options = {
-            title: 'Select Avatar',
+            title: 'Select image',
             storageOptions: {
               skipBackup: true,
               path: 'images',
             },
           };
-          const response = await launchCamera(options);
+          const response = await launchImageLibrary(options);
           result = response.assets[0];
           const keyMapping = {
             uri: 'fileCopyUri',
@@ -669,7 +671,7 @@ const DynamicForm = ({}) => {
           );
         } else {
           result = await pick({
-            type: [fileType === 'image' ? types.images : types.allFiles],
+            type: [types.allFiles],
             destination: 'cachesDirectory',
           });
           const keyMapping = {
@@ -885,144 +887,151 @@ const DynamicForm = ({}) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      {formData &&
-        formData.map((field, index) => {
-          switch (field.type) {
-            case 'text':
-            case 'phone':
-            case 'email':
-            case 'number':
-            case 'textarea':
-              return (
-                <View key={index} style={styles.fieldContainer}>
-                  <Text style={styles.label}>
-                    {field.label}
-                    {field.required &&
-                      (!field?.conditions ||
-                        field.conditions.length === 0 ||
-                        checkIsConditionMatch(field)) && (
-                        <Text style={styles.required}>*</Text>
-                      )}
-                  </Text>
-                  <TextInput
-                    ref={ref => (inputRefs.current[index] = ref)}
-                    style={[
-                      styles.input,
-                      {height: field.type === 'textarea' ? isTablet() ? wp(120) : wp(150) : isTablet() ? wp(30) : wp(48)},
-                      focusedField === field.name && {borderColor: '#754FFF'},
-                    ]}
-                    placeholder={field.label}
-                    placeholderTextColor={colors.teal_757575}
-                    value={formValues[field.name] || ''}
-                    onChangeText={value => {
-                      if (field.type === 'phone') {
-                        handleInputChange(
-                          field.name,
-                          field.label,
-                          value,
-                          '',
-                          'phone',
-                        );
-                      } else {
-                        handleInputChange(field.name, field.label, value);
-                      }
-                    }}
-                    onFocus={() => setFocusedField(field.name)}
-                    onBlur={() => setFocusedField(null)}
-                    returnKeyType="next"
-                    onSubmitEditing={() => focusNextInput(index)}
-                    multiline={field.type === 'textarea'}
-                    autoCorrect={false}
-                    autoCapitalize={
-                      field.type === 'email' ? 'none' : 'sentences'
-                    }
-                    keyboardType={getKeyboardType(field.type)}
-                  />
-                  {(errors[field.name] || checkIsConditionMatch(field)) && (
-                    <Text style={styles.errorText}>{errors[field.name]}</Text>
-                  )}
-                </View>
-              );
-
-            case 'checkbox-group':
-              return (
-                <View key={index} style={styles.fieldContainer}>
-                  <Text style={styles.label}>
-                    {field.label}
-                    {field.required &&
-                      (!field?.conditions ||
-                        field.conditions.length === 0 ||
-                        checkIsConditionMatch(field)) && (
-                        <Text style={styles.required}>*</Text>
-                      )}
-                  </Text>
-                  <View style={styles.gridContainer}>
-                    {field.values.map((checkbox, i) => (
-                      <TouchableOpacity
-                        key={i}
-                        style={styles.flexItem}
-                        activeOpacity={0.8}
-                        onPress={() =>
-                          handleCheckboxChange(
-                            field.name,
-                            field.label,
-                            checkbox.value,
-                            checkbox.label,
-                          )
-                        }>
-                        <CheckboxButton
-                          onClick={() =>
-                            handleCheckboxChange(
-                              field.name,
-                              checkbox.value,
-                              !formValues[field.name]?.[checkbox.value],
-                            )
-                          }
-                          style={styles.checkBox}
-                          isChecked={formValues[field.name]?.includes(
-                            checkbox.value,
-                          )}
-                        />
-                        <Text style={styles.optionLabel}>{checkbox.label}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                  {(errors[field.name] || checkIsConditionMatch(field)) && (
-                    <Text style={styles.errorText}>{errors[field.name]}</Text>
-                  )}
-                </View>
-              );
-
-            case 'radio-group':
-              return (
-                <View key={index} style={styles.fieldContainer}>
-                  <Text style={styles.label}>
-                    {field.label}
-                    {field.required &&
-                      (!field?.conditions ||
-                        field.conditions.length === 0 ||
-                        checkIsConditionMatch(field)) && (
-                        <Text style={styles.required}>*</Text>
-                      )}
-                  </Text>
-
-                  <View style={styles.gridContainer}>
-                    {field.values.map((radio, i) => (
-                      <TouchableOpacity
-                        key={i}
-                        style={styles.flexItem}
-                        activeOpacity={0.8}
-                        onPress={() =>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={keyboardVerticalOffset}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled">
+        {formData &&
+          formData.map((field, index) => {
+            switch (field.type) {
+              case 'text':
+              case 'phone':
+              case 'email':
+              case 'number':
+              case 'textarea':
+                return (
+                  <View key={index} style={styles.fieldContainer}>
+                    <Text style={styles.label}>
+                      {field.label}
+                      {field.required &&
+                        (!field?.conditions ||
+                          field.conditions.length === 0 ||
+                          checkIsConditionMatch(field)) && (
+                          <Text style={styles.required}>*</Text>
+                        )}
+                    </Text>
+                    <TextInput
+                      ref={ref => (inputRefs.current[index] = ref)}
+                      style={[
+                        styles.input,
+                        {
+                          height:
+                            field.type === 'textarea'
+                              ? isTablet()
+                                ? wp(120)
+                                : wp(150)
+                              : isTablet()
+                              ? wp(30)
+                              : wp(48),
+                        },
+                        focusedField === field.name && {borderColor: '#754FFF'},
+                      ]}
+                      placeholder={field.label}
+                      placeholderTextColor={colors.teal_757575}
+                      value={formValues[field.name] || ''}
+                      onChangeText={value => {
+                        if (field.type === 'phone') {
                           handleInputChange(
                             field.name,
                             field.label,
-                            radio.value,
-                            radio.label,
-                            field.type,
-                          )
-                        }>
-                        <RadioGroup
+                            value,
+                            '',
+                            'phone',
+                          );
+                        } else {
+                          handleInputChange(field.name, field.label, value);
+                        }
+                      }}
+                      onFocus={() => setFocusedField(field.name)}
+                      onBlur={() => setFocusedField(null)}
+                      returnKeyType="next"
+                      onSubmitEditing={() => focusNextInput(index)}
+                      multiline={field.type === 'textarea'}
+                      autoCorrect={false}
+                      autoCapitalize={
+                        field.type === 'email' ? 'none' : 'sentences'
+                      }
+                      keyboardType={getKeyboardType(field.type)}
+                    />
+                    {(errors[field.name] || checkIsConditionMatch(field)) && (
+                      <Text style={styles.errorText}>{errors[field.name]}</Text>
+                    )}
+                  </View>
+                );
+
+              case 'checkbox-group':
+                return (
+                  <View key={index} style={styles.fieldContainer}>
+                    <Text style={styles.label}>
+                      {field.label}
+                      {field.required &&
+                        (!field?.conditions ||
+                          field.conditions.length === 0 ||
+                          checkIsConditionMatch(field)) && (
+                          <Text style={styles.required}>*</Text>
+                        )}
+                    </Text>
+                    <View style={styles.gridContainer}>
+                      {field.values.map((checkbox, i) => (
+                        <TouchableOpacity
+                          key={i}
+                          style={styles.flexItem}
+                          activeOpacity={0.8}
+                          onPress={() =>
+                            handleCheckboxChange(
+                              field.name,
+                              field.label,
+                              checkbox.value,
+                              checkbox.label,
+                            )
+                          }>
+                          <CheckboxButton
+                            onClick={() =>
+                              handleCheckboxChange(
+                                field.name,
+                                checkbox.value,
+                                !formValues[field.name]?.[checkbox.value],
+                              )
+                            }
+                            style={styles.checkBox}
+                            isChecked={formValues[field.name]?.includes(
+                              checkbox.value,
+                            )}
+                          />
+                          <Text style={styles.optionLabel}>
+                            {checkbox.label}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                    {(errors[field.name] || checkIsConditionMatch(field)) && (
+                      <Text style={styles.errorText}>{errors[field.name]}</Text>
+                    )}
+                  </View>
+                );
+
+              case 'radio-group':
+                return (
+                  <View key={index} style={styles.fieldContainer}>
+                    <Text style={styles.label}>
+                      {field.label}
+                      {field.required &&
+                        (!field?.conditions ||
+                          field.conditions.length === 0 ||
+                          checkIsConditionMatch(field)) && (
+                          <Text style={styles.required}>*</Text>
+                        )}
+                    </Text>
+
+                    <View style={styles.gridContainer}>
+                      {field.values.map((radio, i) => (
+                        <TouchableOpacity
+                          key={i}
+                          style={styles.flexItem}
+                          activeOpacity={0.8}
                           onPress={() =>
                             handleInputChange(
                               field.name,
@@ -1031,368 +1040,385 @@ const DynamicForm = ({}) => {
                               radio.label,
                               field.type,
                             )
-                          }
-                          radioButtons={[{id: radio.value, value: radio.value}]}
-                          selectedId={
-                            formValues[field.name]
-                              ? formValues[field.name][0]
-                              : null
-                          }
-                        />
-                        <Text style={styles.optionLabel}>{radio.label}</Text>
-                      </TouchableOpacity>
-                    ))}
+                          }>
+                          <RadioGroup
+                            onPress={() =>
+                              handleInputChange(
+                                field.name,
+                                field.label,
+                                radio.value,
+                                radio.label,
+                                field.type,
+                              )
+                            }
+                            radioButtons={[
+                              {id: radio.value, value: radio.value},
+                            ]}
+                            selectedId={
+                              formValues[field.name]
+                                ? formValues[field.name][0]
+                                : null
+                            }
+                          />
+                          <Text style={styles.optionLabel}>{radio.label}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                    {(errors[field.name] || checkIsConditionMatch(field)) && (
+                      <Text style={styles.errorText}>{errors[field.name]}</Text>
+                    )}
                   </View>
-                  {(errors[field.name] || checkIsConditionMatch(field)) && (
-                    <Text style={styles.errorText}>{errors[field.name]}</Text>
-                  )}
-                </View>
-              );
+                );
 
-            case 'date-picker':
-              return (
-                <View key={index} style={styles.fieldContainer}>
-                  <DatePicker
-                    ref={ref => {
-                      datePickersRef.current[field.name] = ref;
-                    }}
-                    title={field.label}
-                    isRequired={
-                      field.required &&
-                      (!field?.conditions ||
-                        field.conditions.length === 0 ||
-                        checkIsConditionMatch(field))
-                    }
-                    minimumDate={field.minimumDate}
-                    maximumDate={field.maximumDate}
-                    defaultDate={field.defaultValue}
-                    onDateChange={date =>
-                      handleInputChange(field.name, field.label, date)
-                    }
-                  />
-                  {(errors[field.name] || checkIsConditionMatch(field)) && (
-                    <Text style={styles.errorText}>{errors[field.name]}</Text>
-                  )}
-                </View>
-              );
-
-            case 'select':
-              return (
-                <View key={index} style={styles.fieldContainer}>
-                  <Dropdown
-                    ref={ref => {
-                      if (ref) {
-                        dropdownRefs.current[field.name] = ref; // Assign ref dynamically
+              case 'date-picker':
+                return (
+                  <View key={index} style={styles.fieldContainer}>
+                    <DatePicker
+                      ref={ref => {
+                        datePickersRef.current[field.name] = ref;
+                      }}
+                      title={field.label}
+                      isRequired={
+                        field.required &&
+                        (!field?.conditions ||
+                          field.conditions.length === 0 ||
+                          checkIsConditionMatch(field))
                       }
-                    }}
-                    title={field.label}
-                    isRequired={
-                      field.required &&
-                      (!field?.conditions ||
-                        field.conditions.length === 0 ||
-                        checkIsConditionMatch(field))
-                    }
-                    placeHolder="Select"
-                    onItemSelected={item =>
-                      handleInputChange(
-                        field.name,
-                        field.label,
-                        item.value,
-                        item.label,
-                        field.type,
-                      )
-                    }
-                    data={field.values}
-                    keyName="label"
-                    val={formValues[field.name]}
-                  />
-                  {(errors[field.name] || checkIsConditionMatch(field)) && (
-                    <Text style={styles.errorText}>{errors[field.name]}</Text>
-                  )}
-                </View>
-              );
-
-            case 'file':
-              return (
-                <View key={index} style={styles.fieldContainer}>
-                  <Text style={styles.label}>
-                    {field.label}
-                    {field.required && <Text style={styles.required}>*</Text>}
-                  </Text>
-
-                  <View
-                    style={[
-                      styles.buttonContainer,
-                      {flexDirection: 'row', justifyContent: 'space-between'},
-                    ]}>
-                    <TouchableOpacity
-                      style={[styles.fileButton, {flex: 1, marginRight: 5}]}
-                      onPress={() =>
-                        handleSingleFileSelection(
-                          field.name,
-                          field.label,
-                          'image',
-                          'camera',
-                        )
-                      }>
-                      <Text>From Camera</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.fileButton, {flex: 1, marginLeft: 5}]}
-                      onPress={() =>
-                        handleSingleFileSelection(
-                          field.name,
-                          field.label,
-                          'image',
-                        )
-                      }>
-                      <Text>From Gallery</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.fileButton, {flex: 1, marginLeft: 5}]}
-                      onPress={() =>
-                        handleSingleFileSelection(
-                          field.name,
-                          field.label,
-                          field.type === 'file',
-                        )
-                      }>
-                      <Text>Browse Files</Text>
-                    </TouchableOpacity>
+                      minimumDate={field.minimumDate}
+                      maximumDate={field.maximumDate}
+                      defaultDate={field.defaultValue}
+                      onDateChange={date =>
+                        handleInputChange(field.name, field.label, date)
+                      }
+                    />
+                    {(errors[field.name] || checkIsConditionMatch(field)) && (
+                      <Text style={styles.errorText}>{errors[field.name]}</Text>
+                    )}
                   </View>
+                );
 
-                  <View style={styles.filePreviewContainer}>
-                    {fileInputs[field.name]?.map((file, i) => (
-                      <Pressable
-                        onPress={() => {
-                          handleOpenFile(file);
-                        }}
-                        key={i}>
-                        {renderFilePreview(file, field.name, i)}
-                      </Pressable>
-                    ))}
-                  </View>
-                  {(errors[field.name] || checkIsConditionMatch(field)) && (
-                    <Text style={styles.errorText}>{errors[field.name]}</Text>
-                  )}
-                </View>
-              );
-            case 'image':
-              return (
-                <View key={index} style={styles.fieldContainer}>
-                  <Text style={styles.label}>
-                    {field.label}
-                    {field.required && <Text style={styles.required}>*</Text>}
-                  </Text>
-                  <View
-                    style={[
-                      styles.buttonContainer,
-                      {flexDirection: 'row', justifyContent: 'space-between'},
-                    ]}>
-                    <TouchableOpacity
-                      style={[styles.fileButton, {flex: 1, marginRight: 5}]}
-                      onPress={() =>
-                        handleSingleFileSelection(
+              case 'select':
+                return (
+                  <View key={index} style={styles.fieldContainer}>
+                    <Dropdown
+                      ref={ref => {
+                        if (ref) {
+                          dropdownRefs.current[field.name] = ref; // Assign ref dynamically
+                        }
+                      }}
+                      title={field.label}
+                      isRequired={
+                        field.required &&
+                        (!field?.conditions ||
+                          field.conditions.length === 0 ||
+                          checkIsConditionMatch(field))
+                      }
+                      placeHolder="Select"
+                      onItemSelected={item =>
+                        handleInputChange(
                           field.name,
                           field.label,
-                          'image',
-                          'camera',
-                        )
-                      }>
-                      <Text>From Camera</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.fileButton, {flex: 1, marginLeft: 5}]}
-                      onPress={() =>
-                        handleSingleFileSelection(
-                          field.name,
-                          field.label,
-                          'image',
-                        )
-                      }>
-                      <Text>From Gallery</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.filePreviewContainer}>
-                    {fileInputs[field.name]?.map((file, i) => (
-                      <Pressable
-                        onPress={() => {
-                          handleOpenFile(file);
-                        }}
-                        key={i}>
-                        {renderFilePreview(file, field.name, i)}
-                      </Pressable>
-                    ))}
-                  </View>
-                  {(errors[field.name] || checkIsConditionMatch(field)) && (
-                    <Text style={styles.errorText}>{errors[field.name]}</Text>
-                  )}
-                </View>
-              );
-
-            default:
-              return null;
-          }
-        })}
-      {showPassword === '1' && (
-        <>
-          <View style={[styles.fieldContainer, {flexDirection: 'row'}]}>
-            <Text style={[styles.label, {marginRight: wp(8)}]}>
-              Set Password
-            </Text>
-            <CheckboxButton
-              onClick={() => setIsPasswordSet(!isPasswordSet)}
-              isChecked={isPasswordSet}
-            />
-          </View>
-          {isPasswordSet && (
-            <View style={[styles.fieldContainer]}>
-              <Text style={styles.label}>
-                Password{' '}
-                {passwordError && <Text style={styles.required}>*</Text>}
-              </Text>
-              <TextInput
-                style={[styles.input, {height: 60}]}
-                placeholder="Enter password"
-                value={password}
-                secureTextEntry
-                onChangeText={handlePasswordChange}
-              />
-              {passwordError && (
-                <Text style={styles.errorText}>{passwordError}</Text>
-              )}
-            </View>
-          )}
-        </>
-      )}
-      {maxContacts > 0 && Array.isArray(formValues?.other_contacts) ? (
-        <View style={styles.multipleContactView}>
-          <View style={styles.headerRow}>
-            <FontText
-              fontFamily={Fonts.robotMedium}
-              size={normalize(18)}
-              color={colors.black_222222}>
-              Multiple Contact
-            </FontText>
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={handleAddNewContact}>
-              <FontText
-                fontFamily={Fonts.robotBold}
-                size={normalize(14)}
-                color={colors.white}>
-                + Add New
-              </FontText>
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.tabScrollView}>
-            <View style={styles.tabContainer}>
-              {formValues.other_contacts.map((_, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.tab,
-                    currentFormIndex === index
-                      ? styles.activeTab
-                      : styles.inactiveTab,
-                  ]}
-                  onPress={() => setCurrentFormIndex(index)}>
-                  <FontText
-                    pRight={wp(8)}
-                    fontFamily={Fonts.robotRegular}
-                    size={normalize(14)}
-                    color={colors.black_222222}>
-                    Contact {index + 1}
-                  </FontText>
-                  {index !== 0 && (
-                    <TouchableOpacity
-                      onPress={() => handleRemoveContact(index)}>
-                      <FontText
-                        fontFamily={Fonts.robotRegular}
-                        size={normalize(14)}
-                        color="red">
-                        ✕
-                      </FontText>
-                    </TouchableOpacity>
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
-
-          {formValues.other_contacts.map((contact, index) =>
-            index === currentFormIndex ? (
-              <View key={index}>
-                {contactFields.map(field => (
-                  <View key={field.name} style={styles.fieldContainer}>
-                    <FontText
-                      fontFamily={Fonts.robotMedium}
-                      size={normalize(14)}
-                      color={colors.black_222222}>
-                      {field.label}{' '}
-                      {field.required && <Text style={styles.required}>*</Text>}
-                    </FontText>
-                    <TextInput
-                      style={[
-                        styles.input,
-                        focusedField === field.label && {
-                          borderColor: '#754FFF',
-                        },
-                      ]}
-                      placeholder={field.label}
-                      value={contact[field.name]}
-                      onFocus={() => setFocusedField(field.label)}
-                      onBlur={() => setFocusedField(null)}
-                      onChangeText={value =>
-                        handleContactInputChange(
-                          index,
-                          field.name,
-                          value,
+                          item.value,
+                          item.label,
                           field.type,
                         )
                       }
-                      keyboardType={
-                        field.type === 'phone'
-                          ? 'phone-pad'
-                          : field.type === 'email'
-                          ? 'email-address'
-                          : 'default'
-                      }
-                      autoCapitalize={
-                        field.type === 'email' ? 'none' : 'sentences'
-                      }
+                      data={field.values}
+                      keyName="label"
+                      val={formValues[field.name]}
                     />
-                    {errors.other_contacts?.[index]?.[field.name] && (
-                      <Text style={styles.errorText}>
-                        {errors.other_contacts[index][field.name]}
-                      </Text>
+                    {(errors[field.name] || checkIsConditionMatch(field)) && (
+                      <Text style={styles.errorText}>{errors[field.name]}</Text>
                     )}
                   </View>
+                );
+
+              case 'file':
+                return (
+                  <View key={index} style={styles.fieldContainer}>
+                    <Text style={styles.label}>
+                      {field.label}
+                      {field.required && <Text style={styles.required}>*</Text>}
+                    </Text>
+
+                    <View
+                      style={[
+                        styles.buttonContainer,
+                        {flexDirection: 'row', justifyContent: 'space-between'},
+                      ]}>
+                      <TouchableOpacity
+                        style={[styles.fileButton, {flex: 1, marginRight: 5}]}
+                        onPress={() =>
+                          handleSingleFileSelection(
+                            field.name,
+                            field.label,
+                            'image',
+                            'camera',
+                          )
+                        }>
+                        <Text>From Camera</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.fileButton, {flex: 1, marginLeft: 5}]}
+                        onPress={() =>
+                          handleSingleFileSelection(
+                            field.name,
+                            field.label,
+                            'image',
+                            'gallery'
+                          )
+                        }>
+                        <Text>From Gallery</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.fileButton, {flex: 1, marginLeft: 5}]}
+                        onPress={() =>
+                          handleSingleFileSelection(
+                            field.name,
+                            field.label,
+                            field.type === 'file',
+                          )
+                        }>
+                        <Text>Browse Files</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.filePreviewContainer}>
+                      {fileInputs[field.name]?.map((file, i) => (
+                        <Pressable
+                          onPress={() => {
+                            handleOpenFile(file);
+                          }}
+                          key={i}>
+                          {renderFilePreview(file, field.name, i)}
+                        </Pressable>
+                      ))}
+                    </View>
+                    {(errors[field.name] || checkIsConditionMatch(field)) && (
+                      <Text style={styles.errorText}>{errors[field.name]}</Text>
+                    )}
+                  </View>
+                );
+              case 'image':
+                return (
+                  <View key={index} style={styles.fieldContainer}>
+                    <Text style={styles.label}>
+                      {field.label}
+                      {field.required && <Text style={styles.required}>*</Text>}
+                    </Text>
+                    <View
+                      style={[
+                        styles.buttonContainer,
+                        {flexDirection: 'row', justifyContent: 'space-between'},
+                      ]}>
+                      <TouchableOpacity
+                        style={[styles.fileButton, {flex: 1, marginRight: 5}]}
+                        onPress={() =>
+                          handleSingleFileSelection(
+                            field.name,
+                            field.label,
+                            'image',
+                            'camera',
+                          )
+                        }>
+                        <Text>From Camera</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={[styles.fileButton, {flex: 1, marginLeft: 5}]}
+                        onPress={() =>
+                          handleSingleFileSelection(
+                            field.name,
+                            field.label,
+                            'image',
+                            'gallery'
+                          )
+                        }>
+                        <Text>From Gallery</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <View style={styles.filePreviewContainer}>
+                      {fileInputs[field.name]?.map((file, i) => (
+                        <Pressable
+                          onPress={() => {
+                            handleOpenFile(file);
+                          }}
+                          key={i}>
+                          {renderFilePreview(file, field.name, i)}
+                        </Pressable>
+                      ))}
+                    </View>
+                    {(errors[field.name] || checkIsConditionMatch(field)) && (
+                      <Text style={styles.errorText}>{errors[field.name]}</Text>
+                    )}
+                  </View>
+                );
+
+              default:
+                return null;
+            }
+          })}
+        {showPassword === '1' && (
+          <>
+            <View style={[styles.fieldContainer, {flexDirection: 'row'}]}>
+              <Text style={[styles.label, {marginRight: wp(8)}]}>
+                Set Password
+              </Text>
+              <CheckboxButton
+                onClick={() => setIsPasswordSet(!isPasswordSet)}
+                isChecked={isPasswordSet}
+              />
+            </View>
+            {isPasswordSet && (
+              <View style={[styles.fieldContainer]}>
+                <Text style={styles.label}>
+                  Password{' '}
+                  {passwordError && <Text style={styles.required}>*</Text>}
+                </Text>
+                <TextInput
+                  style={[styles.input, {height: 60}]}
+                  placeholder="Enter password"
+                  value={password}
+                  secureTextEntry
+                  onChangeText={handlePasswordChange}
+                />
+                {passwordError && (
+                  <Text style={styles.errorText}>{passwordError}</Text>
+                )}
+              </View>
+            )}
+          </>
+        )}
+        {maxContacts > 0 && Array.isArray(formValues?.other_contacts) ? (
+          <View style={styles.multipleContactView}>
+            <View style={styles.headerRow}>
+              <FontText
+                fontFamily={Fonts.robotMedium}
+                size={normalize(18)}
+                color={colors.black_222222}>
+                Multiple Contact
+              </FontText>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={handleAddNewContact}>
+                <FontText
+                  fontFamily={Fonts.robotBold}
+                  size={normalize(14)}
+                  color={colors.white}>
+                  + Add New
+                </FontText>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.tabScrollView}>
+              <View style={styles.tabContainer}>
+                {formValues.other_contacts.map((_, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.tab,
+                      currentFormIndex === index
+                        ? styles.activeTab
+                        : styles.inactiveTab,
+                    ]}
+                    onPress={() => setCurrentFormIndex(index)}>
+                    <FontText
+                      pRight={wp(8)}
+                      fontFamily={Fonts.robotRegular}
+                      size={normalize(14)}
+                      color={colors.black_222222}>
+                      Contact {index + 1}
+                    </FontText>
+                    {index !== 0 && (
+                      <TouchableOpacity
+                        onPress={() => handleRemoveContact(index)}>
+                        <FontText
+                          fontFamily={Fonts.robotRegular}
+                          size={normalize(14)}
+                          color="red">
+                          ✕
+                        </FontText>
+                      </TouchableOpacity>
+                    )}
+                  </TouchableOpacity>
                 ))}
               </View>
-            ) : null,
-          )}
-        </View>
-      ) : null}
+            </ScrollView>
 
-      <Button
-        onPress={handleSave}
-        style={{
-          marginTop: wp(20),
-          marginBottom: wp(20),
-        }}>
-        <FontText
-          fontFamily={Fonts.robotRegular}
-          size={normalize(16)}
-          color={colors.white}>
-          {'Submit'}
-        </FontText>
-      </Button>
-    </ScrollView>
+            {formValues.other_contacts.map((contact, index) =>
+              index === currentFormIndex ? (
+                <View key={index}>
+                  {contactFields.map(field => (
+                    <View key={field.name} style={styles.fieldContainer}>
+                      <FontText
+                        fontFamily={Fonts.robotMedium}
+                        size={normalize(14)}
+                        color={colors.black_222222}>
+                        {field.label}{' '}
+                        {field.required && (
+                          <Text style={styles.required}>*</Text>
+                        )}
+                      </FontText>
+                      <TextInput
+                        style={[
+                          styles.input,
+                          focusedField === field.label && {
+                            borderColor: '#754FFF',
+                          },
+                        ]}
+                        placeholder={field.label}
+                        value={contact[field.name]}
+                        onFocus={() => setFocusedField(field.label)}
+                        onBlur={() => setFocusedField(null)}
+                        onChangeText={value =>
+                          handleContactInputChange(
+                            index,
+                            field.name,
+                            value,
+                            field.type,
+                          )
+                        }
+                        keyboardType={
+                          field.type === 'phone'
+                            ? 'phone-pad'
+                            : field.type === 'email'
+                            ? 'email-address'
+                            : 'default'
+                        }
+                        autoCapitalize={
+                          field.type === 'email' ? 'none' : 'sentences'
+                        }
+                      />
+                      {errors.other_contacts?.[index]?.[field.name] && (
+                        <Text style={styles.errorText}>
+                          {errors.other_contacts[index][field.name]}
+                        </Text>
+                      )}
+                    </View>
+                  ))}
+                </View>
+              ) : null,
+            )}
+          </View>
+        ) : null}
+
+        <Button
+          onPress={handleSave}
+          style={{
+            marginTop: wp(20),
+            marginBottom: wp(40),
+          }}>
+          <FontText
+            fontFamily={Fonts.robotRegular}
+            size={normalize(16)}
+            color={colors.white}>
+            {'Submit'}
+          </FontText>
+        </Button>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -1570,6 +1596,10 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  scrollContainer: {
+    flexGrow: 1, //Important to allow scrollview to expand past its initial height.
+    paddingVertical: wp(16),
   },
 });
 

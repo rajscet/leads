@@ -35,6 +35,7 @@ import LeadListItem from './LeadListItem';
 import leadService from 'services/leadService';
 import {useLoader} from 'providers/LoaderProvider';
 import {useFocusEffect} from '@react-navigation/native';
+import {isTablet} from 'react-native-device-info';
 
 const {width} = Dimensions.get('window');
 
@@ -401,7 +402,7 @@ const LeadsList = ({value}) => {
         keyExtractor={item => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.container}
-        numColumns={2}
+        numColumns={isTablet() ? 2 : 1}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }

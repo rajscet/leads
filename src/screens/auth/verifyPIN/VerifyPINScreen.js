@@ -123,18 +123,17 @@ const VerifyPINScreen = ({navigation, route}) => {
             size={normalize(20)}>{`Session ID : ${session}`}</FontText>
 
           {/* OTP Inputs */}
-          <>
+          <View style={{marginTop: 'auto', marginBottom: 'auto'}}>
+            <FontText
+              size={normalize(15)}
+              color={colors.black_222222}
+              fontFamily={Fonts.robotBold}
+              pTop={wp(4)}
+              pRight={wp(8)}
+              pBottom={hp(4)}>
+              {'PIN'}
+            </FontText>
             <View style={styles.otpContainer}>
-              <FontText
-                size={normalize(15)}
-                color={colors.black_222222}
-                fontFamily={Fonts.robotBold}
-                pTop={wp(4)}
-                style={{alignSelf: 'center'}}
-                pRight={wp(8)}
-                pBottom={hp(4)}>
-                {'PIN'}
-              </FontText>
               {otp.map((value, index) => (
                 <TextInput
                   key={index}
@@ -160,7 +159,7 @@ const VerifyPINScreen = ({navigation, route}) => {
                 />
               ))}
             </View>
-          </>
+          </View>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
       <Button
@@ -169,7 +168,7 @@ const VerifyPINScreen = ({navigation, route}) => {
           width: '92%',
           marginTop: 'auto',
           marginHorizontal: wp(20),
-          marginBottom: wp(20),
+          marginBottom: wp(40),
         }}>
         <FontText
           fontFamily={Fonts.robotRegular}
@@ -216,8 +215,6 @@ const styles = StyleSheet.create({
   otpContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 'auto',
-    marginBottom: 'auto',
   },
   otpInput: {
     width: normalize(48),

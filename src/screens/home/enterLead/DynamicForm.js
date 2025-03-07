@@ -72,7 +72,7 @@ const DynamicForm = ({}) => {
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
   const dropdownRefs = useRef({});
   const [currentFormIndex, setCurrentFormIndex] = useState(0);
-  const keyboardVerticalOffset = Platform.OS === 'ios' ? 40 : 0;
+  const keyboardVerticalOffset = Platform.OS === 'ios' ? wp(80) : 0;
 
   const processImage = async uri => {
     try {
@@ -1160,7 +1160,7 @@ const DynamicForm = ({}) => {
                             'camera',
                           )
                         }>
-                        <Text>From Camera</Text>
+                        <Text style={styles.fileButtonText} >From Camera</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={[styles.fileButton, {flex: 1, marginLeft: 5}]}
@@ -1172,7 +1172,7 @@ const DynamicForm = ({}) => {
                             'gallery',
                           )
                         }>
-                        <Text>From Gallery</Text>
+                        <Text style={styles.fileButtonText} >From Gallery</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={[styles.fileButton, {flex: 1, marginLeft: 5}]}
@@ -1183,7 +1183,7 @@ const DynamicForm = ({}) => {
                             field.type === 'file',
                           )
                         }>
-                        <Text>Browse Files</Text>
+                        <Text style={styles.fileButtonText} >Browse Files</Text>
                       </TouchableOpacity>
                     </View>
 
@@ -1225,7 +1225,7 @@ const DynamicForm = ({}) => {
                             'camera',
                           )
                         }>
-                        <Text>From Camera</Text>
+                        <Text style={styles.fileButtonText} >From Camera</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={[styles.fileButton, {flex: 1, marginLeft: 5}]}
@@ -1237,7 +1237,7 @@ const DynamicForm = ({}) => {
                             'gallery',
                           )
                         }>
-                        <Text>From Gallery</Text>
+                        <Text style={styles.fileButtonText} >From Gallery</Text>
                       </TouchableOpacity>
                     </View>
                     <View style={styles.filePreviewContainer}>
@@ -1275,11 +1275,11 @@ const DynamicForm = ({}) => {
             {isPasswordSet && (
               <View style={[styles.fieldContainer]}>
                 <Text style={styles.label}>
-                  Password{' '}
+                  Password
                   {passwordError && <Text style={styles.required}>*</Text>}
                 </Text>
                 <TextInput
-                  style={[styles.input, {height: 60}]}
+                  style={[styles.input, {height: isTablet() ? wp(30) : wp(48)}]}
                   placeholder="Enter password"
                   value={password}
                   secureTextEntry
@@ -1368,6 +1368,7 @@ const DynamicForm = ({}) => {
                       <TextInput
                         style={[
                           styles.input,
+                          {height: isTablet() ? wp(30) : wp(48)},
                           focusedField === field.label && {
                             borderColor: '#754FFF',
                           },
@@ -1518,12 +1519,20 @@ const styles = StyleSheet.create({
   },
   fileButton: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: colors.primary,
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
     marginBottom: 10,
-  },
+    height: isTablet() ? wp(30) : wp(48),
+    justifyContent: 'center', // added this
+},
+
+fileButtonText: {
+    fontSize: normalize(14),
+    color: colors.primary,
+    textAlign: 'center',
+},
   closeButton: {
     position: 'absolute',
     top: wp(0),

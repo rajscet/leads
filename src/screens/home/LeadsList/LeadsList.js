@@ -352,7 +352,7 @@ const LeadsList = ({value}) => {
       <View style={styles.buttonContainer}>
         {value === 'Saved' && (
           <Button
-            buttonHeight={wp(30)}
+            buttonHeight={ isTablet() ? wp(30) : wp(45)}
             onPress={() => {
               onSyncMultiple();
             }}
@@ -367,11 +367,11 @@ const LeadsList = ({value}) => {
         )}
         {user.role.name === 'Tablet Super Admin' && (
           <Button
-            buttonHeight={wp(30)}
+            buttonHeight={isTablet() ? wp(30) : wp(45)}
             onPress={() => {
               doDeleteAllLeads();
             }}
-            style={styles.button}>
+            style={[styles.button]}>
             <FontText
               fontFamily={Fonts.robotRegular}
               size={normalize(14)}
@@ -386,7 +386,7 @@ const LeadsList = ({value}) => {
             onPress={() => {
               writeAndShareCSV();
             }}
-            buttonHeight={wp(30)}
+            buttonHeight={isTablet() ? wp(30) : wp(45)}
             style={styles.button}>
             <FontText
               fontFamily={Fonts.robotRegular}
@@ -413,7 +413,7 @@ const LeadsList = ({value}) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: wp(16),
+    marginHorizontal: wp(8),
   },
   item: {
     flex: 1,
@@ -459,13 +459,14 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginHorizontal: wp(16),
+    justifyContent: 'space-between',
+    marginRight: wp(16),
     marginBottom: wp(8),
   },
   button: {
     marginLeft: wp(16),
     minWidth: wp(50),
+    flex: 0.25,
   },
   columnWrapper: {
     justifyContent: 'space-between', // Ensures items are spaced evenly

@@ -225,7 +225,7 @@ export async function getRecordById(id) {
   }
 }
 
-export async function updateSyncFileStatus(id,data,newStatus) {
+export async function updateSyncFileStatus(id,newStatus) {
   const db = await openDatabase();
   try {
     const result = await executeSQL(

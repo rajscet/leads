@@ -4,7 +4,7 @@ import SvgIcons from 'assets/svgs/svgIcons';
 import {PREFERENCE, ROUTE_NAMES} from 'constants/index';
 import {updateSyncFileStatusWithData} from 'helpers/dbHelpler';
 import globalStyle from 'helpers/styles';
-import {wp} from 'helpers/styles/responsive';
+import {normalize, wp} from 'helpers/styles/responsive';
 import {Utils} from 'helpers/utils';
 import {navigateTo} from 'navigation/navigationHelper';
 import {useLoader} from 'providers/LoaderProvider';
@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { isTablet } from 'react-native-device-info';
 import leadService from 'services/leadService';
 
 const LeadListItem = ({
@@ -156,7 +157,7 @@ const LeadListItem = ({
           leadId,
         });
       }}>
-      <View style={{alignItems: 'flex-end'}}>
+      <View style={{alignItems: 'flex-end', flexDirection: 'row'}}>
         {type === 'Saved' && isSync === 0 && (
           <Pressable style={styles.syncButtonContainer}>
             <TouchableOpacity
@@ -230,7 +231,7 @@ const LeadListItem = ({
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    paddingVertical: 16,
+    paddingVertical: wp(8),
     paddingLeft: 16,
     backgroundColor: '#f8f9fa',
     borderRadius: wp(5),
@@ -247,18 +248,19 @@ const styles = StyleSheet.create({
   },
   syncButton: {
     backgroundColor: colors.primary,
-    paddingVertical: wp(4),
+    justifyContent: 'center',
     paddingHorizontal: wp(12),
     borderRadius: wp(4),
     width: 'auto',
+    height: isTablet() ? wp(30) : wp(30),
   },
   syncButtonText: {
     color: '#fff',
-    fontSize: wp(8),
+    fontSize: normalize(12),
   },
   container: {
     flex: 1,
-    marginTop: wp(20),
+    marginTop: wp(8),
   },
   sectionContainer: {
     padding: 10,
@@ -272,6 +274,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: wp(8),
     backgroundColor: 'transparent',
+    marginTop: wp(16),
   },
   sectionHeader: {
     fontSize: 18,
@@ -304,7 +307,7 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: '#FFF',
-    padding: 12,
+    paddingHorizontal: wp(12),
     margin: 6,
     borderRadius: 8,
     elevation: 2,

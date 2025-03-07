@@ -19,7 +19,7 @@ function Header({title, onBackPress, right, style, hasLeft}) {
       left={
         hasLeft ? (
           <Pressable hitSlop={{top: 10, bottom: 10, left: 10, right: 15}} onPress={onBackPress}>
-            <SvgIcons.Left width={normalize(wp(7))} height={normalize(wp(11))}    fill={colors.white} />
+            <SvgIcons.Left width={wp(7)} height={wp(11)}    fill={colors.white} />
           </Pressable>
         ) : null
       }

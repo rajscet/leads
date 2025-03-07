@@ -54,5 +54,6 @@ const styles = StyleSheet.create({
     borderRadius: 20, // Increase border radius
     overflow: 'hidden', // Ensure rounded corners apply correctly
     height: isTablet() ? wp(30) : wp(48), // Increase height
+    marginBottom: wp(16),
   },
 });

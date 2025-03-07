@@ -1,10 +1,11 @@
-import {wp} from 'helpers/styles/responsive';
+import {normalize, wp} from 'helpers/styles/responsive';
 import {Utils} from 'helpers/utils';
 import React from 'react';
-import {ScrollView, StyleSheet, Text, View} from 'react-native';
+import {ScrollView, StyleSheet, Text, View, Dimensions} from 'react-native';
 
 const LeadTextDetail = ({data, record}) => {
   const [contacts, setContacts] = React.useState([]);
+  const screenWidth = Dimensions.get('window').width;
 
   React.useEffect(() => {
     const lead = JSON.parse(record);
@@ -63,15 +64,28 @@ const LeadTextDetail = ({data, record}) => {
               <Text style={[styles.sectionHeader, {textAlign: 'left'}]}>
                 Contacts
               </Text>
-              <View style={styles.gridContainer}>
+              <View
+                style={[
+                  styles.gridContainer,
+                  {
+                    flexDirection:
+                      screenWidth < 600 ? 'column' : 'row',
+                    justifyContent:
+                      screenWidth < 600 ? 'flex-start' : 'space-between',
+                    paddingHorizontal: screenWidth < 600 ? 0 : wp(2), // Reduced horizontal padding
+                  },
+                ]}>
                 {contacts.map((contact, index) => (
                   <View
                     key={index}
                     style={[
                       styles.item,
-                      index % 2 === 0
-                        ? {marginRight: '2%'}
-                        : {marginLeft: '2%'},
+                      {
+                        width: screenWidth < 600 ? '100%' : '48%',
+                        marginRight: screenWidth < 600 ? 0 : index % 2 === 0 ? wp(1) : 0,
+                        marginLeft: screenWidth < 600 ? 0 : index % 2 !== 0 ? wp(1) : 0,
+                        marginBottom: screenWidth < 600 ? 10 : 10,
+                      },
                     ]}>
                     {Object.entries(contact).map(([key, value]) => (
                       <View
@@ -80,10 +94,10 @@ const LeadTextDetail = ({data, record}) => {
                           styles.row,
                           {paddingVertical: 5, paddingHorizontal: 8},
                         ]}>
-                        <Text style={[styles.key, {fontSize: 16}]}>
+                        <Text style={[styles.key, {fontSize: normalize(12)}]}>
                           {key.replace(/_/g, ' ')}:
                         </Text>
-                        <Text style={[styles.value, {fontSize: 16}]}>
+                        <Text style={[styles.value, {fontSize: normalize(12)}]}>
                           {value}
                         </Text>
                       </View>
@@ -116,7 +130,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   sectionHeader: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 12,
     textAlign: 'center',
@@ -138,12 +152,12 @@ const styles = StyleSheet.create({
   },
   label: {
     fontWeight: 'bold',
-    fontSize: 18,
+    fontSize: 16,
     width: '45%',
     textAlign: 'left',
   },
   text: {
-    fontSize: 18,
+    fontSize: 16,
     width: '50%',
     textAlign: 'right',
   },
@@ -157,16 +171,15 @@ const styles = StyleSheet.create({
   },
 
   contactContainer: {
-    padding: 10,
+    paddingVertical: 10,
     backgroundColor: '#f5f5f5',
+    marginTop: wp(8),
   },
   gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap', // Enables grid layout
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
   item: {
-    width: '48%', // Ensures two items per row
     backgroundColor: 'white',
     padding: 10,
     marginBottom: 10,
@@ -176,11 +189,11 @@ const styles = StyleSheet.create({
   },
   key: {
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 12,
     color: '#333',
   },
   value: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
   },
 });

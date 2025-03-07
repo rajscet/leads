@@ -18,34 +18,29 @@ import {
   Linking,
 } from 'react-native';
 import {updateFileData, updateSyncFileStatus} from 'helpers/dbHelpler';
-
+import Share from 'react-native-share';
 
 const LeadAttachment = ({data, id, leadId, record}) => {
   const [fileData, setFileData] = useState(data);
   const {startLoader, stopLoader} = useLoader();
-  
 
   React.useEffect(() => {
     console.log('data', data);
-  }, [data])
-  
+  }, [data]);
 
-  const handleOpenFile = uri => {
-    if (!uri) {
-      Alert.alert('Error', 'File URI is not available.');
-      return;
+  const handleOpenFile = async file => {
+    try {
+      const shareOptions = {
+        title: 'View file',
+        url: file.uri,
+        type: file.type,
+      };
+
+      await Share.open(shareOptions);
+    } catch (error) {
+      console.error('Error opening file: ', error);
+      // Alert.alert('Error', error.message);
     }
-    Linking.canOpenURL(uri)
-      .then(supported => {
-        if (supported) {
-          Linking.openURL(uri);
-        } else {
-          Alert.alert('Error', 'Cannot open this file.');
-        }
-      })
-      .catch(err =>
-        Alert.alert('Error', `Failed to open file: ${err.message}`),
-      );
   };
 
   const handleSync = async (fieldName, index) => {
@@ -130,7 +125,7 @@ const LeadAttachment = ({data, id, leadId, record}) => {
 
     return (
       <View key={`${fieldName}-${index}`} style={styles.filePreviewItem}>
-        <TouchableOpacity onPress={() => handleOpenFile(file.uri)}>
+        <TouchableOpacity onPress={() => handleOpenFile(file)}>
           {renderIcon()}
         </TouchableOpacity>
 
@@ -182,12 +177,12 @@ const LeadAttachment = ({data, id, leadId, record}) => {
   };
 
   React.useEffect(() => {
-    updateFileData(id,{...record, ...fileData})
+    updateFileData(id, {...record, ...fileData});
     if (Utils.totalIsSyncZeroCount(fileData) === 0) {
       updateSyncFileStatus(id, true);
     }
   }, [fileData]);
-  
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>

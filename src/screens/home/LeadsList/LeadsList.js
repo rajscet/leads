@@ -1,10 +1,8 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import colors from 'assets/colors';
 import Fonts from 'assets/fonts/fonts';
 import Button from 'components/Button';
 import FontText from 'components/FontText';
-import {PREFERENCE} from 'constants/index';
 import {
   deleteAllLeadsSyncFalse,
   deleteAllLeadsSyncTrue,
@@ -13,10 +11,10 @@ import {
   getAllLeadsTextSyncFalse,
   insertLog,
   updateSyncStatus,
-  updateSyncStatusBatch,
 } from 'helpers/dbHelpler';
 import {normalize, wp} from 'helpers/styles/responsive';
 import {Utils} from 'helpers/utils';
+import {useLoader} from 'providers/LoaderProvider';
 import React, {useEffect, useState} from 'react';
 import {
   ActivityIndicator,
@@ -26,23 +24,21 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import RNFetchBlob from 'react-native-blob-util';
-import Share from 'react-native-share';
-import LeadListItem from './LeadListItem';
-import leadService from 'services/leadService';
-import {useLoader} from 'providers/LoaderProvider';
-import {useFocusEffect} from '@react-navigation/native';
 import {isTablet} from 'react-native-device-info';
+import Share from 'react-native-share';
+import leadService from 'services/leadService';
+import LeadListItem from './LeadListItem';
+import { useFocusEffect } from '@react-navigation/native';
 
 const {width} = Dimensions.get('window');
 
-const LeadsList = ({value}) => {
+
+const LeadsList = ({user, value}) => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(undefined);
   const [isConnected, setIsConnected] = useState(undefined);
   const {startLoader, stopLoader} = useLoader();
   const [refreshing, setRefreshing] = useState(false);
@@ -50,33 +46,26 @@ const LeadsList = ({value}) => {
   // Fetch leads where isSync is false
   const fetchLeads = async () => {
     try {
-      if (!user) {
-        const userJSON = JSON.parse(
-          await AsyncStorage.getItem(PREFERENCE.USER),
+      let data = [];
+      setLoading(true);
+      if (value === 'Sent') {
+        data = await getAllLeadsSyncTrue(
+          user.role.name === 'Tablet Super Admin',
+          user.id,
         );
-        setUser(userJSON);
-      } else {
-        let data = [];
-        if (value === 'Sent') {
-          data = await getAllLeadsSyncTrue(
-            user.role.name === 'Tablet Super Admin',
-            user.id,
-          );
-          console.log('dataX', data);
-          //  Alert.alert('Sent');
-        } else if (value === 'Saved') {
-          data = await getAllLeadsSyncFalse(
-            user.role.name === 'Tablet Super Admin',
-            user.id,
-          );
-        }
-        console.log('data', data);
-        setLeads(data);
+        console.log('dataSent', data);
+        //  Alert.alert('Sent');
+      } else if (value === 'Saved') {
+        data = await getAllLeadsSyncFalse(
+          user.role.name === 'Tablet Super Admin',
+          user.id,
+        );
+        console.log('dataSaved', data);
       }
-
-      setLoading(false);
+      setLeads(data);
     } catch (error) {
       console.error('Error fetching leads:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -148,7 +137,7 @@ const LeadsList = ({value}) => {
 
   useEffect(() => {
     fetchLeads();
-  }, [value, user]);
+  }, [value]);
 
   // useFocusEffect(
   //   React.useCallback(() => {
@@ -238,18 +227,18 @@ const LeadsList = ({value}) => {
     </View>
   );
 
-  if (loading) {
-    return (
-      <ActivityIndicator style={styles.loading} size="large" color="#0000ff" />
-    );
-  }
-  if (leads.length === 0) {
-    return (
-      <View style={styles.noLeadsContainer}>
-        <Text style={styles.noLeadsText}>No Leads Found</Text>
-      </View>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <ActivityIndicator style={styles.loading} size="large" color="#0000ff" />
+  //   );
+  // }
+  // if (leads.length === 0) {
+  //   return (
+  //     <View style={styles.noLeadsContainer}>
+  //       <Text style={styles.noLeadsText}>No Leads Found</Text>
+  //     </View>
+  //   );
+  // }
 
   const writeAndShareCSV = async () => {
     try {
@@ -352,7 +341,7 @@ const LeadsList = ({value}) => {
       <View style={styles.buttonContainer}>
         {value === 'Saved' && (
           <Button
-            buttonHeight={ isTablet() ? wp(30) : wp(45)}
+            buttonHeight={isTablet() ? wp(30) : wp(45)}
             onPress={() => {
               onSyncMultiple();
             }}

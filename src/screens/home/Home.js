@@ -1,33 +1,20 @@
-import {ENV, ROUTE_NAMES} from 'constants/index';
-import * as React from 'react';
-import {
-  Text,
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  Dimensions,
-} from 'react-native';
-import {Drawer} from 'react-native-drawer-layout';
-import EnterDynamicLead from './enterLead/EnterDynamicLead';
-import LeadsListScreen from './LeadsList/LeadsListScreen';
-import SearchCustomer from './searchCustomer/SearchCustomer';
-import LogScreen from './logs/LogScreen';
-import {DrawerItem} from 'screens/drawer/DrawerItem';
-import LocalImages from 'assets/images/localImages';
-import {
-  hp,
-  normalize,
-  viewportHeight,
-  viewportWidth,
-  wp,
-} from 'helpers/styles/responsive';
+import colors from 'assets/colors';
 import Fonts from 'assets/fonts/fonts';
+import LocalImages from 'assets/images/localImages';
 import SvgIcons from 'assets/svgs/svgIcons';
 import FontText from 'components/FontText';
-import colors from 'assets/colors';
-import DeviceInfo, {isTablet} from 'react-native-device-info';
+import {ENV, ROUTE_NAMES} from 'constants/index';
+import {normalize, wp} from 'helpers/styles/responsive';
 import {Utils} from 'helpers/utils';
+import * as React from 'react';
+import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import DeviceInfo, {isTablet} from 'react-native-device-info';
+import {Drawer} from 'react-native-drawer-layout';
+import {DrawerItem} from 'screens/drawer/DrawerItem';
+import EnterDynamicLead from './enterLead/EnterDynamicLead';
+import LeadsListScreen from './LeadsList/LeadsListScreen';
+import LogScreen from './logs/LogScreen';
+import SearchCustomer from './searchCustomer/SearchCustomer';
 
 function CustomDrawerContent({user, onClose, setScreen}) {
   const [selectedItem, setSelectedItem] = React.useState(
@@ -36,7 +23,12 @@ function CustomDrawerContent({user, onClose, setScreen}) {
 
   return (
     <View style={[styles.drawerContent]}>
-      <View style={{flexDirection: 'row', marginVertical: wp(30), width: isTablet() ? wp(200) : wp(250),}}>
+      <View
+        style={{
+          flexDirection: 'row',
+          marginVertical: wp(30),
+          width: isTablet() ? wp(200) : wp(250),
+        }}>
         <SvgIcons.DrawerMenu style={{marginLeft: wp(8), marginRight: wp(14)}} />
         <View>
           <FontText
@@ -241,7 +233,7 @@ export default function Home({route}) {
   if (currentScreen === ROUTE_NAMES.ENTER_LEAD_SCREEN) {
     screenComponent = <EnterDynamicLead openDrawer={openDrawer} />;
   } else if (currentScreen === ROUTE_NAMES.LEAD_LIST) {
-    screenComponent = <LeadsListScreen openDrawer={openDrawer} />;
+    screenComponent = <LeadsListScreen user={user} openDrawer={openDrawer} />;
   } else if (currentScreen === ROUTE_NAMES.SEARCH_CUSTOMER) {
     screenComponent = <SearchCustomer openDrawer={openDrawer} />;
   } else if (currentScreen === ROUTE_NAMES.LOG_SCREEN) {

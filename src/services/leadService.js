@@ -32,12 +32,15 @@ const syncMultipleLeadInBackground = async () => {
       userId,
     );
     // Prepare the payload for the API
-    const leadsPayload = unsyncedLeads.map(lead => ({...JSON.parse(lead.value), tablet_local_id: lead.id}));
+    const leadsPayload = unsyncedLeads.map(lead => ({
+      ...JSON.parse(lead.value),
+      tablet_local_id: lead.id,
+    }));
 
     // Sync leads via API
     const response = await createLead({leads: leadsPayload, user_id: user.id});
 
-    if (response.status === true) {
+    if (response && response?.status === true) {
       // Extract local IDs and synced API IDs
       for (let i = 0; i < response.data.length; i++) {
         const syncedLead = response.data[i];
@@ -149,9 +152,10 @@ const getAllLocations = async params => {
 
 const createLead = async params => {
   try {
-    // Bugfender.log('Create Lead', params);
-    const response = await postRequestApi(URLS.CREATE_LEAD, params);
-    return response;
+    if (params.leads && params.leads.length > 0) {
+      const response = await postRequestApi(URLS.CREATE_LEAD, params);
+      return response;
+    }
   } catch (e) {
     return e;
   }

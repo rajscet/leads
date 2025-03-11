@@ -56,21 +56,21 @@ const configureMinIO = () => {
 };
 
 
-// const configureMinIO = () => {
-//   AWS.config.update({
-//     accessKeyId: 'oHr099IcVfoHUo4bfIZn', // Replace with your MinIO access key
-//     secretAccessKey: 'UhbBvAeNKkWd4EDXCufIx3md2A8TwL1KqZJ2vrX0', // Replace with your MinIO secret key
-//     region: 'us-east-1', // Dummy region
-//   });
+/* const configureMinIO = () => {
+  AWS.config.update({
+    accessKeyId: 'oHr099IcVfoHUo4bfIZn', // Replace with your MinIO access key
+    secretAccessKey: 'UhbBvAeNKkWd4EDXCufIx3md2A8TwL1KqZJ2vrX0', // Replace with your MinIO secret key
+    region: 'us-east-1', // Dummy region
+  });
 
-//   const s3 = new AWS.S3({
-//     endpoint: 'https://minio.leads.empiresas.com',
-//     s3ForcePathStyle: true,
-//     signatureVersion: 'v4',
-//   });
+  const s3 = new AWS.S3({
+    endpoint: 'https://minio.leads.empiresas.com',
+    s3ForcePathStyle: true,
+    signatureVersion: 'v4',
+  });
 
-//   return s3;
-// };
+  return s3;
+}; */
 
 
 const removeNonDigits = str => {

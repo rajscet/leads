@@ -57,7 +57,7 @@ const syncMultipleLeadInBackground = async () => {
         message: 'leadSyncedBackground',
       });
     } else {
-      insertLog(
+      await insertLog(
         'Create Lead',
         JSON.stringify({leads: leadsPayload, user_id: user.id}),
         JSON.stringify(response),

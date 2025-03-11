@@ -21,24 +21,27 @@ import {
 import {isTablet} from 'react-native-device-info';
 import customerService from 'services/customerService';
 
-const SearchCustomer = ({openDrawer}) => {
-  const {startLoader, stopLoader} = useLoader(); // Use global loader
+const SearchCustomer = ({user, openDrawer}) => {
+  const {startLoader, stopLoader} = useLoader();
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [nextPageAvailable, setNextPageAvailable] = useState(true);
-  const [totalRecords, setTotalRecords] = useState(0); // Stores total count
-
-  const [selectedCustomer, setSelectedCustomer] = useState(null); // Stores selected customer
-  const [modalVisible, setModalVisible] = useState(false); // Controls modal visibility
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [noteModalVisible, setNoteModalVisible] = useState(false);
+  const [noteText, setNoteText] = useState('');
+  const [selectedCustomerForNote, setSelectedCustomerForNote] = useState(null);
 
   const {width} = useWindowDimensions();
-  const numColumns = width > 768 ? 2 : 1; // 2 columns for tablets, 1 for mobile
+  const numColumns = width > 768 ? 2 : 1;
 
-  // Function to fetch customers
   const fetchCustomers = async (reset = false) => {
-    if (loadingMore) return; // Prevent duplicate calls
+    if (loadingMore) {
+      return;
+    }
     reset ? startLoader() : setLoadingMore(true);
 
     try {
@@ -51,52 +54,95 @@ const SearchCustomer = ({openDrawer}) => {
       if (response.status) {
         const newCustomers = response.data.customers || [];
         setResults(reset ? newCustomers : [...results, ...newCustomers]);
-        setTotalRecords(response.data.count); // Store total count
+        setTotalRecords(response.data.count);
         setPageNumber(reset ? 2 : pageNumber + 1);
         setNextPageAvailable(response.data.next_page_available);
       }
     } catch (error) {
       console.error('Error fetching customers:', error);
     } finally {
-      if (reset) stopLoader();
+      if (reset) {
+        stopLoader();
+      }
       setLoadingMore(false);
     }
   };
-  // Handle search reset
+
   const handleSearch = () => {
     setPageNumber(1);
     fetchCustomers(true);
   };
 
-  // Open modal with full customer details
   const openModal = customer => {
     setSelectedCustomer(customer);
     setModalVisible(true);
   };
 
-  // Close modal
   const closeModal = () => {
     setModalVisible(false);
     setSelectedCustomer(null);
   };
 
-  // Render each card
+  const openNoteModal = customer => {
+    setSelectedCustomerForNote(customer);
+    setNoteModalVisible(true);
+    setNoteText('');
+  };
+
+  const closeNoteModal = () => {
+    setNoteModalVisible(false);
+    setSelectedCustomerForNote(null);
+    setNoteText('');
+  };
+
+  const handleNoteSubmit = async () => {
+    try {
+      closeNoteModal();
+      startLoader();
+      const params = {
+        customer_id: selectedCustomerForNote.id,
+        note: noteText, // Note text
+        user_id: user.id,
+      };
+      const response = await customerService.addNote(params);
+      if (response && response?.status === true) {
+        alert('Note added successfully');
+      }
+    } catch (e) {
+      alert(e);
+    } finally {
+      stopLoader();
+    }
+    console.log(`Note for customer ${selectedCustomerForNote.id}: ${noteText}`);
+  };
+
   const renderItem = ({item}) => (
-    <Pressable style={styles.card} onPress={() => openModal(item)}>
-      <Text style={styles.title}>{item.customer_name}</Text>
-      <View style={styles.modalRow}>
-        <Text style={styles.listKey}>{'Account:'}</Text>
-        <Text style={styles.listValue}>{item.account_name}</Text>
-      </View>
-      <View style={styles.modalRow}>
-        <Text style={styles.listKey}>{'Full Name:'}</Text>
-        <Text style={styles.listValue}>{item.first_last_name}</Text>
-      </View>
-      <View style={styles.modalRow}>
-        <Text style={styles.listKey}>{'Email'}:</Text>
-        <Text style={styles.listValue}>{item.email}</Text>
-      </View>
-    </Pressable>
+    <View style={styles.card}>
+      <Pressable onPress={() => openModal(item)}>
+        <Text style={styles.title}>{item.customer_name}</Text>
+        <View style={styles.modalRow}>
+          <Text style={styles.listKey}>{'Account:'}</Text>
+          <Text style={styles.listValue}>{item.account_name}</Text>
+        </View>
+        <View style={styles.modalRow}>
+          <Text style={styles.listKey}>{'Full Name:'}</Text>
+          <Text style={styles.listValue}>{item.first_last_name}</Text>
+        </View>
+        <View style={styles.modalRow}>
+          <Text style={styles.listKey}>{'Email'}:</Text>
+          <Text style={styles.listValue}>{item.email}</Text>
+        </View>
+        {item.note ? (
+          <View style={styles.modalRow}>
+            <Text style={styles.listKey}>{'Note'}:</Text>
+            <Text style={styles.listValue}>{item.note}</Text>
+          </View>
+        ) : null}
+      </Pressable>
+      <Pressable style={styles.noteButton} onPress={() => openNoteModal(item)}>
+        <Text style={styles.noteButtonText}>Add Note</Text>
+      </Pressable>
+    </View>
   );
 
   return (
@@ -132,7 +178,6 @@ const SearchCustomer = ({openDrawer}) => {
           </Pressable>
         </View>
 
-        {/* Display No Records Found if count is 0 */}
         {totalRecords === 0 && (
           <View style={styles.noRecordsContainer}>
             <Text style={styles.noRecordsText}>No Records Found</Text>
@@ -150,7 +195,6 @@ const SearchCustomer = ({openDrawer}) => {
         />
       </View>
 
-      {/* Modal for displaying full customer details */}
       <Modal
         visible={modalVisible}
         transparent
@@ -172,6 +216,32 @@ const SearchCustomer = ({openDrawer}) => {
             <Pressable style={styles.closeButton} onPress={closeModal}>
               <Text style={styles.buttonText}>Close</Text>
             </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={noteModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeNoteModal}>
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <TextInput
+              style={styles.noteInput}
+              multiline
+              placeholder="Enter note..."
+              value={noteText}
+              onChangeText={setNoteText}
+            />
+            <View style={styles.noteButtonContainer}>
+              <Pressable style={styles.closeButton} onPress={handleNoteSubmit}>
+                <Text style={styles.buttonText}>Submit</Text>
+              </Pressable>
+              <Pressable style={styles.closeButton} onPress={closeNoteModal}>
+                <Text style={styles.buttonText}>Cancel</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </Modal>
@@ -221,7 +291,6 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: '92%',
-
     padding: 20,
     backgroundColor: '#FFF',
     borderRadius: 8,
@@ -244,7 +313,6 @@ const styles = StyleSheet.create({
   subContainer: {
     paddingHorizontal: wp(16),
   },
-
   totalRecordsContainer: {
     alignItems: 'flex-end',
     marginBottom: 10,
@@ -263,10 +331,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#999',
   },
-
   title: {fontWeight: 'bold', marginBottom: 5, fontSize: normalize(14)},
   columnWrapper: {justifyContent: 'space-between'},
-
   list: {flexDirection: 'row', marginBottom: 5, flex: 1},
   listKey: {
     fontWeight: 'bold',
@@ -275,6 +341,33 @@ const styles = StyleSheet.create({
     fontSize: normalize(14),
   },
   listValue: {flex: 2, color: '#555', fontSize: normalize(14)},
+  noteButton: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  noteButtonText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  noteInput: {
+    height: 150,
+    borderWidth: 1,
+    borderColor: '#CCC',
+    borderRadius: 8,
+    padding: 10,
+    backgroundColor: '#FFF',
+    marginBottom: 10,
+    textAlignVertical: 'top',
+  },
+  noteButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
 });
 
 export default SearchCustomer;

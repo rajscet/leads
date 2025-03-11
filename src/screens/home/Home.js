@@ -235,7 +235,7 @@ export default function Home({route}) {
   } else if (currentScreen === ROUTE_NAMES.LEAD_LIST) {
     screenComponent = <LeadsListScreen user={user} openDrawer={openDrawer} />;
   } else if (currentScreen === ROUTE_NAMES.SEARCH_CUSTOMER) {
-    screenComponent = <SearchCustomer openDrawer={openDrawer} />;
+    screenComponent = <SearchCustomer user={user} openDrawer={openDrawer} />;
   } else if (currentScreen === ROUTE_NAMES.LOG_SCREEN) {
     screenComponent = <LogScreen openDrawer={openDrawer} />;
   }

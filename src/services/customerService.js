@@ -12,10 +12,18 @@ const getCustomer = async (params) => {
     return e;
   }
 };
-
+const addNote = async (params) => {
+  try {
+    const response = await postRequestApi(URLS.CUSTOMER_NOTE, params);
+    return response;
+  } catch (e) {
+    return e;
+  }
+};
 
 
 
 export default {
   getCustomer,
+  addNote,
 };

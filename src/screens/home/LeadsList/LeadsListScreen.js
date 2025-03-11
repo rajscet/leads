@@ -5,14 +5,16 @@ import DrawerHeader from 'components/header/DrawerHeader';
 import {normalize, wp} from 'helpers/styles/responsive';
 import React, {useMemo} from 'react';
 import {StyleSheet, View} from 'react-native';
-import LeadsList from './LeadsList';
+import LeadsList from './SavedLeadsList';
 import { isTablet } from 'react-native-device-info';
+import SentLeadsList from './SentLeadsList';
+import SavedLeadsList from './SavedLeadsList';
 
-export default function LeadsListScreen({openDrawer}) {
+export default function LeadsListScreen({user,openDrawer}) {
   const [selectedType, setSelectedType] = React.useState(0);
   // Memoize LeadsList components to avoid re-rendering
-  const sentList = useMemo(() => <LeadsList value="Sent" />, []);
-  const savedList = useMemo(() => <LeadsList value="Saved" />, []);
+  const sentList = useMemo(() => <SentLeadsList user={user}  />, []);
+  const savedList = useMemo(() => <SavedLeadsList user={user} />, []);
 
   return (
     <View key={selectedType.toString()} style={styles.screen}>

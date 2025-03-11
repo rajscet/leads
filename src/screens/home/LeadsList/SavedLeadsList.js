@@ -5,9 +5,7 @@ import Button from 'components/Button';
 import FontText from 'components/FontText';
 import {
   deleteAllLeadsSyncFalse,
-  deleteAllLeadsSyncTrue,
   getAllLeadsSyncFalse,
-  getAllLeadsSyncTrue,
   getAllLeadsTextSyncFalse,
   insertLog,
   updateSyncStatus,
@@ -24,6 +22,7 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
+  Text,
   View,
 } from 'react-native';
 import RNFetchBlob from 'react-native-blob-util';
@@ -31,12 +30,10 @@ import {isTablet} from 'react-native-device-info';
 import Share from 'react-native-share';
 import leadService from 'services/leadService';
 import LeadListItem from './LeadListItem';
-import { useFocusEffect } from '@react-navigation/native';
 
 const {width} = Dimensions.get('window');
 
-
-const LeadsList = ({user, value}) => {
+const SavedLeadsList = ({user}) => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(undefined);
@@ -46,22 +43,12 @@ const LeadsList = ({user, value}) => {
   // Fetch leads where isSync is false
   const fetchLeads = async () => {
     try {
-      let data = [];
       setLoading(true);
-      if (value === 'Sent') {
-        data = await getAllLeadsSyncTrue(
-          user.role.name === 'Tablet Super Admin',
-          user.id,
-        );
-        console.log('dataSent', data);
-        //  Alert.alert('Sent');
-      } else if (value === 'Saved') {
-        data = await getAllLeadsSyncFalse(
-          user.role.name === 'Tablet Super Admin',
-          user.id,
-        );
-        console.log('dataSaved', data);
-      }
+      const data = await getAllLeadsSyncFalse(
+        user.role.name === 'Tablet Super Admin',
+        user.id,
+      );
+      console.log('dataSaved', data);
       setLeads(data);
     } catch (error) {
       console.error('Error fetching leads:', error);
@@ -137,7 +124,7 @@ const LeadsList = ({user, value}) => {
 
   useEffect(() => {
     fetchLeads();
-  }, [value]);
+  }, []);
 
   // useFocusEffect(
   //   React.useCallback(() => {
@@ -215,7 +202,7 @@ const LeadsList = ({user, value}) => {
       <LeadListItem
         data={JSON.parse(item.label)}
         id={item.id}
-        type={value}
+        type={'Saved'}
         isSync={item.isSync}
         isFileSync={item.isFileSync}
         role={user.role.name}
@@ -227,18 +214,18 @@ const LeadsList = ({user, value}) => {
     </View>
   );
 
-  // if (loading) {
-  //   return (
-  //     <ActivityIndicator style={styles.loading} size="large" color="#0000ff" />
-  //   );
-  // }
-  // if (leads.length === 0) {
-  //   return (
-  //     <View style={styles.noLeadsContainer}>
-  //       <Text style={styles.noLeadsText}>No Leads Found</Text>
-  //     </View>
-  //   );
-  // }
+  if (loading) {
+    return (
+      <ActivityIndicator style={styles.loading} size="large" color="#0000ff" />
+    );
+  }
+  if (leads.length === 0) {
+    return (
+      <View style={styles.noLeadsContainer}>
+        <Text style={styles.noLeadsText}>No Leads Found</Text>
+      </View>
+    );
+  }
 
   const writeAndShareCSV = async () => {
     try {
@@ -251,16 +238,7 @@ const LeadsList = ({user, value}) => {
       //   return;
       // }
       let data = [];
-      if (value === 'Sent') {
-        data = await getAllLeadsSyncTrue(
-          user.role.name === 'Tablet Super Admin',
-          user.id,
-        );
-        //  Alert.alert('Sent');
-      } else if (value === 'Saved') {
-        data = await getAllLeadsTextSyncFalse();
-        // Alert.alert('Saved');
-      }
+      data = await getAllLeadsTextSyncFalse();
 
       // Parse and flatten the data
       const headers = ['Username', 'Location']; // Rename uname and location
@@ -311,18 +289,14 @@ const LeadsList = ({user, value}) => {
 
   const doDeleteAllLeads = async () => {
     Utils.showAlertWithButtons(
-      `Delete ${value} Leads!`,
-      `Are you sure, want to delete All ${value} leads?`,
+      `Delete Saved Leads!`,
+      `Are you sure, want to delete All Saved leads?`,
       'No',
       'Yes',
       async () => {
         try {
           setLoading(true);
-          if (value === 'Sent') {
-            await deleteAllLeadsSyncTrue();
-          } else {
-            await deleteAllLeadsSyncFalse();
-          }
+          await deleteAllLeadsSyncFalse();
           setLeads([]);
           Alert.alert('All Leads deleted successfully');
 
@@ -339,7 +313,7 @@ const LeadsList = ({user, value}) => {
   return (
     <>
       <View style={styles.buttonContainer}>
-        {value === 'Saved' && (
+        {leads && leads.length > 0 && (
           <Button
             buttonHeight={isTablet() ? wp(30) : wp(45)}
             onPress={() => {
@@ -354,6 +328,7 @@ const LeadsList = ({user, value}) => {
             </FontText>
           </Button>
         )}
+
         {user.role.name === 'Tablet Super Admin' && (
           <Button
             buttonHeight={isTablet() ? wp(30) : wp(45)}
@@ -467,4 +442,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LeadsList;
+export default SavedLeadsList;

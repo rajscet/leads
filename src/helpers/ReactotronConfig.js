@@ -3,9 +3,9 @@ import Reactotron, { asyncStorage } from 'reactotron-react-native';
 import {reactotronRedux} from 'reactotron-redux';
 
 const reactron = Reactotron.configure({
-  name: 'My Leads',
+  // name: 'My Leads',
   host: '192.168.29.34',
-  //  ho st: '192.168.31.124',
+  //  host: '192.168.31.124',
 })
   .useReactNative({
     storybook: true,

@@ -8,4 +8,5 @@ export const URLS = {
   GET_LEAD_FIELDS: '/locations/get-lead-fields',
   UPDATE_LEAD: '/lead/update',
   GET_CUSTOMER: '/accumatica/get-customers',
+  CUSTOMER_NOTE: '/customer-notes/tablet/create',
 };

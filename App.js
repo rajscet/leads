@@ -13,7 +13,7 @@ import leadService from 'services/leadService';
 import useDidMountEffect from 'components/UseDidMountEffect';
 import ToastConfig from 'components/Toast/ToastConfig';
 import Toast from 'react-native-toast-message';
-import {getAttachmentLeads} from 'helpers/dbHelpler';
+import {closeDatabase, getAttachmentLeads} from 'helpers/dbHelpler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // import reactron from 'helpers/ReactotronConfig';
@@ -41,6 +41,9 @@ function App() {
     NetInfo.addEventListener(state => {
       setIsConnected(state.isConnected);
     });
+    return () => {
+      closeDatabase(); // Close the database on component unmount
+    };
   }, []);
 
   useDidMountEffect(() => {

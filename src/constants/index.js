@@ -53,10 +53,10 @@ export const backgroundActionOptions = {
   foreground: true, 
 };
 
-export const BASE_URL = 'https://backend.staging.leads.empireeto.com';
+// export const BASE_URL = 'https://backend.staging.leads.empireeto.com';
 // export const BASE_URL = 'https://backend-review.staging.leads.empireeto.com';
-// export const BASE_URL = 'https://backend.leads.empiresas.com';
-export const ENV = 'Staging';
+export const BASE_URL = 'https://backend.leads.empiresas.com';
+export const ENV = 'Production';
 
 export const DEFAULT_DATE = '1111-11-11';
 

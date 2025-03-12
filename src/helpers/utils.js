@@ -39,7 +39,7 @@ const formatPhoneNumber = phone => {
   return cleaned;
 };
 
-const configureMinIO = () => {
+/* const configureMinIO = () => {
   AWS.config.update({
     accessKeyId: '1ipAlVRm31mDoCTdnnbG', // Replace with your MinIO access key
     secretAccessKey: 'CCTITYWMs1H71OjICR0oAwUR9y6Y9juaAn5BynTF', // Replace with your MinIO secret key
@@ -53,10 +53,10 @@ const configureMinIO = () => {
   });
 
   return s3;
-};
+}; */
 
 
-/* const configureMinIO = () => {
+const configureMinIO = () => {
   AWS.config.update({
     accessKeyId: 'oHr099IcVfoHUo4bfIZn', // Replace with your MinIO access key
     secretAccessKey: 'UhbBvAeNKkWd4EDXCufIx3md2A8TwL1KqZJ2vrX0', // Replace with your MinIO secret key
@@ -70,7 +70,7 @@ const configureMinIO = () => {
   });
 
   return s3;
-}; */
+};
 
 
 const removeNonDigits = str => {

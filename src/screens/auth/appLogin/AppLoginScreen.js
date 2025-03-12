@@ -29,11 +29,11 @@ const AppLoginScreen = ({navigation}) => {
       setShouldLoad(
         Platform.OS !== 'android' || (await hasAndroidCameraPermission()),
       );
-      setTimeout(() => {
-        navigation.navigate(ROUTE_NAMES.VERIFY_PIN_SCREEN, {
-          session: '1dbaf62b-035b-416b-84c9-df087bb82719',
-        });
-      });
+      // setTimeout(() => {
+      //   navigation.navigate(ROUTE_NAMES.VERIFY_PIN_SCREEN, {
+      //     session: '1dbaf62b-035b-416b-84c9-df087bb82719',
+      //   });
+      // });
     })();
   }, []);
 

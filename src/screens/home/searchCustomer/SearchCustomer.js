@@ -5,18 +5,21 @@ import DrawerHeader from 'components/header/DrawerHeader';
 import {normalize, wp} from 'helpers/styles/responsive';
 import {Utils} from 'helpers/utils';
 import {useLoader} from 'providers/LoaderProvider';
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {
-  View,
+  FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
-  FlatList,
-  Pressable,
+  TouchableWithoutFeedback,
   useWindowDimensions,
-  StyleSheet,
-  Modal,
-  TouchableOpacity,
-  ScrollView,
+  View,
 } from 'react-native';
 import {isTablet} from 'react-native-device-info';
 import customerService from 'services/customerService';
@@ -225,25 +228,31 @@ const SearchCustomer = ({user, openDrawer}) => {
         transparent
         animationType="fade"
         onRequestClose={closeNoteModal}>
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
-            <TextInput
-              style={styles.noteInput}
-              multiline
-              placeholder="Enter note..."
-              value={noteText}
-              onChangeText={setNoteText}
-            />
-            <View style={styles.noteButtonContainer}>
-              <Pressable style={styles.closeButton} onPress={handleNoteSubmit}>
-                <Text style={styles.buttonText}>Submit</Text>
-              </Pressable>
-              <Pressable style={styles.closeButton} onPress={closeNoteModal}>
-                <Text style={styles.buttonText}>Cancel</Text>
-              </Pressable>
-            </View>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.modalBackground}>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={styles.modalContainer}>
+              <TextInput
+                style={styles.noteInput}
+                multiline
+                placeholder="Enter note..."
+                value={noteText}
+                onChangeText={setNoteText}
+              />
+              <View style={styles.noteButtonContainer}>
+                <Pressable
+                  style={styles.closeButton}
+                  onPress={handleNoteSubmit}>
+                  <Text style={styles.buttonText}>Submit</Text>
+                </Pressable>
+                <Pressable style={styles.closeButton} onPress={closeNoteModal}>
+                  <Text style={styles.buttonText}>Cancel</Text>
+                </Pressable>
+              </View>
+            </KeyboardAvoidingView>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
@@ -312,6 +321,7 @@ const styles = StyleSheet.create({
   },
   subContainer: {
     paddingHorizontal: wp(16),
+    paddingBottom: wp(16),
   },
   totalRecordsContainer: {
     alignItems: 'flex-end',
@@ -366,7 +376,7 @@ const styles = StyleSheet.create({
   noteButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginTop: 10,
+    marginVertical: 10,
   },
 });
 
